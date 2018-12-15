@@ -285,7 +285,7 @@ query.run(doc2);
 new Query().select('order.$collection').value().run(doc2);
 ```
 
-Combining `$item` with `$link` allows for collections to provide several links to other values, allowing API designers to reduce collection size and allow for each item to be requested and cached individually.
+Combining `$item` with `$link` lets collections provide several links to other values, allowing API designers to reduce collection size so that each item can be requested and cached individually.
 
 ## Building Documents
 
