@@ -1,5 +1,7 @@
 # Moveable JSON
 
+Moveable JSON is an idea for getting rid of breaking changes we face with JSON and APIs.
+
 ## Overview
 
 Clients break too easily when handling JSON from an API. This is because we strictly define the shape of a JSON and then build clients to rely on the shape. API designers are prevented from evolving the data in ways that allow data models to change shape over time. API designers must plan in advance for properties that may require multiple values later and for values that may change from single values to objects.
