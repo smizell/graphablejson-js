@@ -1,6 +1,6 @@
 # Moveable JSON
 
-Moveable JSON is an idea for getting rid of breaking changes we face with JSON and APIs.
+Moveable JSON is an idea for getting rid of the breaking changes we face with JSON and APIs.
 
 ## Overview
 
