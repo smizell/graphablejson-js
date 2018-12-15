@@ -2,7 +2,7 @@
 
 ## Overview
 
-Clients break too easily when handling JSON from an API. This is because we strictly define the shape of a JSON and then build clients to rely on the shape. APIs are then preventing from evolving the data in ways that allow data models to change shape over time. API designers must plan in advance for properties that may require multiple values later and for values that may change from single values to objects.
+Clients break too easily when handling JSON from an API. This is because we strictly define the shape of a JSON and then build clients to rely on the shape. API designers are prevented from evolving the data in ways that allow data models to change shape over time. API designers must plan in advance for properties that may require multiple values later and for values that may change from single values to objects.
 
 Consider this JSON document.
 
@@ -76,7 +76,7 @@ query.values().run(doc);
 
 ### Handling Query Errors
 
-When the query encounters a `null` or undefined for a query, it will throw an error. This is because the query will not know how you intend on handling values like these.
+When the query encounters a `null` or undefined for a query, it will throw an error. This is because the query will not know how you intend on handling values like these. An error is thrown because it means that something your client depends on is not available. This means that all queries should be wrapped in a try/catch or default values should always be provided.
 
 THe `default` option may be used to specify what to do if `null` or the value is undefined.
 
@@ -306,7 +306,7 @@ car.set('make', 'Ford');
 //   "car": { "make": "Ford" }
 // }
 const car2 = doc.subDocument('car'); // value isn't changed until we add values
-car.set('make', 'Toyota'); 
+car2.set('make', 'Toyota'); 
 // The document now includes two cars
 // { 
 //   "name": ["Jane Doe", "John Doe"], 
