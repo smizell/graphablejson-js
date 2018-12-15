@@ -33,9 +33,7 @@ This problem is apparent with our tools as well. JSON Schema—though great at v
 
 To work toward solving this, we can think of ways in which the JSON can be built so that shape doesn't matter. In this scenario, objects and arrays can be treated as implementation details and can be used when necessary. Clients then write a query stating relationships that it expects and allow the query to freely move through values, arrays, and objects until that query is satisfied.
 
-This pattern is used in many places already. HTML is a common example many face where clients query the document rather than traversing it directly. Clients look for nodes with specific classes or IDs rather than coupling to structure.
-
-JSON-LD is also another example. The data is created as a graph and can be expanded when needed. However, there are cases where JSON-LD is too complex for people to use.
+This pattern is used in many places already. HTML is a common example many face where clients query the document rather than traversing it directly. Clients look for nodes with specific classes or IDs rather than coupling to structure. JSON-LD is also another example. The data is created as a graph and can be expanded when needed. However, there are cases where JSON-LD is too complex for people to use.
 
 Moveable JSON aims to be a simple solution that allows clients to query the JSON regardless of the structure. It allows JSON to move in structure while retaining the relationship of the data. If used correctly, the only breaking changes are when the value types of strings, numbers, or booleans change to a different type of string, number, or boolean. Changing to arrays or objects will not break clients.
 
@@ -300,14 +298,14 @@ doc.set('name', 'Jane Doe'); // { "name": "Jane Doe" }
 doc.set('name', 'John Doe'); // { "name": ["Jane Doe", "John Doe"] }
 
 // Add a sub document
-const car = doc.subDocument('car'); // value isn't changed until we add values
+const car1 = doc.subDocument('car'); // value isn't changed until we add values
 car.set('make', 'Ford'); 
 // Value includes a car document
 // { 
 //   "name": ["Jane Doe", "John Doe"], 
 //   "car": { "make": "Ford" }
 // }
-const car = doc.subDocument('car'); // value isn't changed until we add values
+const car2 = doc.subDocument('car'); // value isn't changed until we add values
 car.set('make', 'Toyota'); 
 // The document now includes two cars
 // { 
