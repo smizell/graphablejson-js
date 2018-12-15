@@ -76,44 +76,6 @@ query.value().run(doc);
 query.values().run(doc); 
 ```
 
-### Handling Query Errors
-
-When the query encounters a `null` or undefined for a query, it will throw an error. This is because the query will not know how you intend on handling values like these. An error is thrown because it means that something your client depends on is not available. This means that all queries should be wrapped in a try/catch or default values should always be provided.
-
-THe `default` option may be used to specify what to do if `null` or the value is undefined.
-
-```js
-const query = new Query().select('foo');
-
-const doc = new Document({
-  foo: null
-});
-
-// Throws type error because of null
-// Same would be true if it's undefined
-query.value().run(doc); 
-
-// Returns 'bar'
-query.value({ default: 'bar' }).run(doc); 
-```
-
-When the query results an object, it will also throw an error. This is because the query is expecting you to return a single value. If an object is found on run, the query will throw an error.
-
-The `default` option can be used to specify what to do if an object is found.
-
-```js
-const query = new Query().select('foo');
-
-const doc = new Document({
-  foo: {
-    baz: 'bar'
-  }
-});
-
-// Throws type error because it gets an object
-query.value().run(doc); 
-```
-
 ### Nested Queries
 
 Like with above, a query shouldn't break just because a property's value switches from a single object to multiple objects. Running `.value` on a query will either give you the direct value or the value of the first object found in an array. 
@@ -201,7 +163,7 @@ const doc3 = new Document({
 query.run(doc3);
 ```
 
-## Changing Types and Evolving Clients and Servers
+### Changing Types and Evolving Clients and Servers
 
 There are instances where a property needs to change a type that is not an array or object, which would result in a breaking change. To fix this, properties can be deprecated and live alongside new values. By default, the client should use the deprecated value unless specified otherwise. 
 
@@ -245,6 +207,44 @@ const doc2 = new Document({
 // property. The client can later be updated and the query can be changed back
 // to use plain select.
 query2.run(doc2);
+```
+
+### Handling Query Errors
+
+When the query encounters a `null` or undefined for a query, it will throw an error. This is because the query will not know how you intend on handling values like these. An error is thrown because it means that something your client depends on is not available. This means that all queries should be wrapped in a try/catch or default values should always be provided.
+
+THe `default` option may be used to specify what to do if `null` or the value is undefined.
+
+```js
+const query = new Query().select('foo');
+
+const doc = new Document({
+  foo: null
+});
+
+// Throws type error because of null
+// Same would be true if it's undefined
+query.value().run(doc); 
+
+// Returns 'bar'
+query.value({ default: 'bar' }).run(doc); 
+```
+
+When the query results an object, it will also throw an error. This is because the query is expecting you to return a single value. If an object is found on run, the query will throw an error.
+
+The `default` option can be used to specify what to do if an object is found.
+
+```js
+const query = new Query().select('foo');
+
+const doc = new Document({
+  foo: {
+    baz: 'bar'
+  }
+});
+
+// Throws type error because it gets an object
+query.value().run(doc); 
 ```
 
 ## Making JSON Web Aware
