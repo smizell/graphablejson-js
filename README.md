@@ -201,6 +201,50 @@ const doc3 = new Document({
 query.run(doc3);
 ```
 
+## Changing Types and Evolving Clients and Servers
+
+There are instances where a property needs to change a type that is not an array or object, which would result in a breaking change. To fix this, properties can be deprecated and live alongside new values. By default, the client should use the deprecated value unless specified otherwise. 
+
+The `__latest` is special because it can set alongside existing values. It allows us to use `selectLatest` when we want to use. If the value with `__latest` is not there, it will revert back to the plain value. This allows clients and servers to be evolved in situations where types have to change.
+
+```js
+const query1 = new Query().select('active').value();
+
+// In the first design, we used 1 and 0 for true or false respectably.
+const doc1 = new Document({
+  active: 1
+});
+
+// Returns 1
+query1.run(doc1);
+
+// Now we change it to include two values
+const doc2 = new Document({
+  active: 1,
+  active__latest: true
+});
+
+// Still returns 1 because it gets deprecated as default
+query1.run(doc2);
+
+// Now we use selectLatest for the query to pick active__latest or
+// fall back to active if active__latest isn't there.
+const query2 = new Query().selectLatest('active').value();
+
+// Now this gets value true
+query2.run(doc2);
+
+// Once clients have moved on, we remove the latest value
+const doc2 = new Document({
+  active: true
+});
+
+// Even though it's looking for active__latest, it will fall back to the active
+// property. The client can later be updated and the query can be changed back
+// to use plain select.
+query2.run(doc2);
+```
+
 ## Making JSON Web Aware
 
 ### Following Links
