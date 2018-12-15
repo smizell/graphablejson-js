@@ -207,6 +207,8 @@ There are instances where a property needs to change a type that is not an array
 
 The `__latest` is special because it can set alongside existing values. It allows us to use `selectLatest` when we want to use. If the value with `__latest` is not there, it will revert back to the plain value. This allows clients and servers to be evolved in situations where types have to change.
 
+Note: this should not be used for evolving objects and arrays as they can be evolved without this pattern.
+
 ```js
 const query1 = new Query().select('active').value();
 
