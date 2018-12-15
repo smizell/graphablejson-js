@@ -285,6 +285,8 @@ query.run(doc2);
 new Query().select('order.$collection').value().run(doc2);
 ```
 
+Combining `$item` with `$link` allows for collections to provide several links to other values, allowing API designers to reduce collection size and allow for each item to be requested and cached individually.
+
 ## Building Documents
 
 Just like querying should not break because the shape changes, building documents should not be about the shape but rather the relationship of data.
