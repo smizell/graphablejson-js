@@ -121,55 +121,11 @@ query.values().run(doc1);
 query.values().run(doc1);
 ```
 
-### Moving From Single Values to Objects
-
-It's common for the design of data to change from a single value to an object. For example, a design may start out where the `address` property is a string with all parts of the address, but later needs to be an object with each part broken out into their own properties.
-
-To allow values to move in this situation, there is the special `$represent` value. It allows the server to provide a value in the event that this happens so that queries
-
-```js
-const query = new Query().select('address').value();
-
-const doc1 = new Document({
-  address: '123 Main St., New York, NY 10101'
-});
-
-// Returns the address value above
-query.run(doc1);
-
-const doc2 = new Document({
-  address: {
-    address1: '123 Main St.',
-    city: 'New York',
-    state: 'NY',
-    zip: '10101'
-  }
-});
-
-// Type error now because it's an object
-query.run(doc2);
-
-const doc3 = new Document({
-  address: {
-    $represent: '123 Main St., New York, NY 10101',
-    address1: '123 Main St.',
-    city: 'New York',
-    state: 'NY',
-    zip: '10101'
-  }
-});
-
-// Returns the $represent value above
-query.run(doc3);
-```
-
 ### Changing Types and Evolving Clients and Servers
 
 There are instances where a property needs to change a type that is not an array or object, which would result in a breaking change. To fix this, properties can be deprecated and live alongside new values. By default, the client should use the deprecated value unless specified otherwise. 
 
-The `__latest` is special because it can set alongside existing values. It allows us to use `selectLatest` when we want to use. If the value with `__latest` is not there, it will revert back to the plain value. This allows clients and servers to be evolved in situations where types have to change.
-
-Note: this should not be used for evolving objects and arrays as they can be evolved without this pattern.
+The `__latest` is special because it can set alongside existing values. It allows us to use `selectLatest` when we want to move to a new property. If the value with `__latest` is not there, it will revert back to the plain value. This allows clients and servers to be evolved in situations where types have to change.
 
 ```js
 const query1 = new Query().select('active').value();
@@ -275,6 +231,8 @@ const doc = new Document({
 // Returns '1234' after following the link
 query.run(doc);
 ```
+
+Note that you can use `__latest` with links as well to move to new resources when necessary.
 
 ### Collections
 
