@@ -263,6 +263,7 @@ const query = new Query().select('order.order_number').value();
 
 // Let's say at the order_url below you can find 
 // {
+//   "url": 'https://example.com/customer/2',
 //   "order_number": "1234",
 //   "total_amount": "$100.00"
 // }
