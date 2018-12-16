@@ -249,28 +249,31 @@ query.value().run(doc);
 
 ## Making JSON Web Aware
 
+Moveable JSON relies on [RESTful JSON](https://restfuljson.org) as a pattern for including links. It is a simple way to include links in JSON, and allow for hyperlinking documents when necessary.
+
 ### Following Links
 
-There are many times where it makes sense to make JSON responses in an API small and allow clients to request more data when needed. The hyperlink makes this possible. Hyperlinks are objects with a `$link` property, where the link is a URI.
+Hyperlinks in RESTful JSON use the following two rules:
+
+1. JSON objects MAY include a `url` property to indicate a link to itself
+1. JSON objects MAY append `_url` or `Url` to properties to indicate related links
 
 ```js
 const query = new Query().select('order.order_number').value();
 
-// Let's say at the $link below you can find 
+// Let's say at the order_url below you can find 
 // {
 //   "order_number": "1234",
 //   "total_amount": "$100.00"
 // }
 const doc = new Document({
-  $url: 'https://example.com/customer/2',
-  order: { $link: 'https://example.com/order/4' }
+  url: 'https://example.com/customer/2',
+  order_url: 'https://example.com/order/4'
 });
 
 // Returns '1234' after following the link
 query.run(doc);
 ```
-
-Shown above is also the use of `$url`, which denotes the URL for the given object.
 
 ### Collections
 
@@ -280,10 +283,17 @@ Additionally, APIs may need to return a partial set of items and let the client 
 const query = new Query().select('order.order_number').values();
 
 const doc1 = new Document({
+  url: 'https://example.com/customer/4538',
   order: [
     {
+      url: 'https://example.com/order/1234',
       order_number: '1234',
       total_amount: '$100.00'
+    },
+    {
+      url: 'https://example.com/order/1235',
+      order_number: '1235',
+      total_amount: '$120.00'
     }
   ]
 });
@@ -299,29 +309,33 @@ query.run(doc1);
 //
 // Let's say this is what page 2 might be.
 // {
-//   $url: 'https://example.com/orders?page=2',
+//   url: 'https://example.com/orders?page=2',
 //   $item: [
 //     {
+//       url: 'https://example.com/order/1236',
 //       order_number: '1236',
 //       total_amount: '$100.00'
 //     }
 //   ],
-//   prev: { $link: 'https://example.com/orders?page=1' }
+//   prev_url: 'https://example.com/orders?page=1'
 // }
 const doc2 = new Document({
+  url: 'https://example.com/customer/4538',
   order: {
-    $url: 'https://example.com/orders?page=1',
+    url: 'https://example.com/orders?page=1',
     $item: [
       {
+        url: 'https://example.com/order/1234',
         order_number: '1234',
         total_amount: '$100.00'
       },
       {
+        url: 'https://example.com/order/1235',
         order_number: '1235',
         total_amount: '$120.00'
       }
     ],
-    next: { $link: 'https://example.com/orders?page=2' }
+    next_url: 'https://example.com/orders?page=2'
   }
 });
 
@@ -333,7 +347,20 @@ query.run(doc2);
 new Query().select('order.$collection').value().run(doc2);
 ```
 
-Combining `$item` with `$link` lets collections provide several links to other values, allowing API designers to reduce collection size so that each item can be requested and cached individually.
+Combining `$item` with RESTful JSON lets collections provide several links to other values, allowing API designers to reduce collection size so that each item can be requested and cached individually.
+
+```js
+const doc2 = new Document({
+  order: {
+    url: 'https://example.com/orders?page=1',
+    $item_url: [
+      'https://example.com/orders/1234',
+      'https://example.com/orders/1235'
+    ],
+    next_url: 'https://example.com/orders?page=2'
+  }
+});
+```
 
 ## Building Documents
 
