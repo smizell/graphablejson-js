@@ -4,7 +4,7 @@ exports.raw = function raw({ document, query, select }) {
   return rawRecursive({ document, query, select, shallow: false });
 }
 
-function rawRecursive({ document, query, select, shallow }) {
+function rawRecursive({ document, query, select }) {
   const [part, ...restQuery] = query;
   const done = restQuery.length === 0;
   let newValue;
@@ -48,10 +48,6 @@ function rawRecursive({ document, query, select, shallow }) {
       if (_.isArray(newValue)) {
         // TODO: throw if any items are arrays
 
-        if (shallow) {
-          throw TypeError();
-        }
-
         // TODO: Queries can only go one level into Plain objects if the value
         // isn't an array. This needs to be fixed so that an error is thrown
         // when it's nested arrays.
@@ -62,8 +58,7 @@ function rawRecursive({ document, query, select, shallow }) {
               return rawRecursive({
                 document: item,
                 query: restQuery,
-                select: 'values',
-                shallow: true
+                select: 'values'
               });
             });
 
@@ -81,8 +76,7 @@ function rawRecursive({ document, query, select, shallow }) {
         return rawRecursive({
           document: newValue,
           query: restQuery,
-          select,
-          shallow: false
+          select
         });
       }
 

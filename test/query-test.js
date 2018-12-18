@@ -105,24 +105,18 @@ describe('Query', function () {
         expect(result).to.eql(['bar', 'fuzz']);
       });
 
-      it('throws an error on impossible values', function () {
-        // There is no way to tell what to do with these. The pattern goes:
-        // object, array, object, array.
-        const impossible = function () {
-          const results = queries.raw({
-            document: {
-              foo: [
-                { baz: ['bar', 'biz'] },
-                { baz: ['fizz', 'buzz'] },
-              ]
-            },
-            query: ['foo', 'baz'],
-            select: 'values'
-          });
-
-          console.log(results);
-        }
-        expect(impossible).to.throw();
+      it('flattens deeply nested values', function () {
+        const results = queries.raw({
+          document: {
+            foo: [
+              { baz: ['bar', 'biz'] },
+              { baz: ['fizz', 'buzz'] },
+            ]
+          },
+          query: ['foo', 'baz'],
+          select: 'values'
+        });
+        expect(results).to.eql(['bar', 'biz', 'fizz', 'buzz'])
       });
     });
   });
