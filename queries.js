@@ -11,16 +11,26 @@ function rawRecursive({ document, query, select }) {
 
   // TODO: test for part undefined
   // TODO: throw on everything except object
+  // TODO: cleanup logic as there is duplication
 
-  // We expect an object
   if (_.has(document, part)) {
     newValue = _.get(document, part);
+
+    // If it's a plain object, we can move on no matter if it's select for
+    // 'value' or 'values'.
+    if (_.isPlainObject(newValue)) {
+      return rawRecursive({
+        document: newValue,
+        query: restQuery,
+        select
+      });
+    }
 
     if (select === 'value') {
       if (_.isArray(newValue)) {
         let first = newValue[0];
 
-        // TODO: throw on array
+        // TODO: throw when first is array
 
         if (_.isPlainObject(first) && !done) {
           return rawRecursive({
@@ -33,14 +43,6 @@ function rawRecursive({ document, query, select }) {
         return newValue[0];
       }
 
-      if (_.isPlainObject(newValue)) {
-        return rawRecursive({
-          document: newValue,
-          query: restQuery,
-          select
-        });
-      }
-
       return newValue;
     }
 
@@ -48,9 +50,6 @@ function rawRecursive({ document, query, select }) {
       if (_.isArray(newValue)) {
         // TODO: throw if any items are arrays
 
-        // TODO: Queries can only go one level into Plain objects if the value
-        // isn't an array. This needs to be fixed so that an error is thrown
-        // when it's nested arrays.
         if (_.every(newValue, _.isPlainObject)) {
           if (!done) {
 
@@ -64,20 +63,13 @@ function rawRecursive({ document, query, select }) {
 
             return _.flatten(results);
           }
-          // TODO: throw if done
+
+          // TODO: throw if done because we don't want objects
         }
 
-        // TODO: throw if all items are not of same type
+        // TODO: throw if all items are not of same type?
 
         return newValue;
-      }
-
-      if (_.isPlainObject(newValue)) {
-        return rawRecursive({
-          document: newValue,
-          query: restQuery,
-          select
-        });
       }
 
       return [newValue];

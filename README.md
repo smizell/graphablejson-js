@@ -71,7 +71,9 @@ const result = queries.raw({
 });
 ```
 
-## Experimental Usage
+## Usage (Not Implemented)
+
+None of the API has been implemented. It is left here for the sake of exploring what this Moveable JSON idea could do.
 
 ### Selecting a Single Value
 
