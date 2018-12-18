@@ -6,7 +6,6 @@ exports.raw = function raw({ document, query, select }) {
 
 function rawRecursive({ document, query, select }) {
   const [part, ...restQuery] = query;
-  const done = restQuery.length === 0;
   let newValue;
 
   // TODO: test for part undefined
@@ -26,55 +25,44 @@ function rawRecursive({ document, query, select }) {
       });
     }
 
-    if (select === 'value') {
-      if (_.isArray(newValue)) {
-        let first = newValue[0];
+    if (_.isArray(newValue)) {
+      let results = [];
 
-        // TODO: throw when first is array
+      for (let i = 0; i < newValue.length; i++) {
+        let current = newValue[i];
+        let value;
 
-        if (_.isPlainObject(first) && !done) {
-          return rawRecursive({
-            document: first,
+        // Objects need to be recursed, arrays need to throw an error, and all
+        // other values can just be added directly to the results array. 
+        //
+        // TODO: throw on error
+        if (_.isPlainObject(current)) {
+          value = rawRecursive({
+            document: current,
             query: restQuery,
             select
           });
+        } else {
+          value = current;
         }
 
-        return newValue[0];
+        // No need to continue the looping if we only need one value
+        if (select === 'value') {
+          return value;
+        }
+
+        results.push(value);
       }
 
-      return newValue;
+      return _.flatten(results);
     }
 
     if (select === 'values') {
-      if (_.isArray(newValue)) {
-        // TODO: throw if any items are arrays
-
-        if (_.every(newValue, _.isPlainObject)) {
-          if (!done) {
-
-            const results = newValue.map((item) => {
-              return rawRecursive({
-                document: item,
-                query: restQuery,
-                select: 'values'
-              });
-            });
-
-            return _.flatten(results);
-          }
-
-          // TODO: throw if done because we don't want objects
-        }
-
-        // TODO: throw if all items are not of same type?
-
-        return newValue;
-      }
-
       return [newValue];
     }
 
-    // TODO: throw error for unknown select
+    if (select === 'value') {
+      return newValue;
+    }
   }
 }

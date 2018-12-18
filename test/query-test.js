@@ -89,11 +89,11 @@ describe('Query', function () {
 
       it('returns nested first of array', function () {
         const result = queries.raw({
-          document: { foo: { baz: ['bar', 'fuzz'] } },
+          document: { foo: { baz: ['bar', 'fuzz', 'fizz'] } },
           query: ['foo', 'baz'],
           select: 'values'
         });
-        expect(result).to.eql(['bar', 'fuzz']);
+        expect(result).to.eql(['bar', 'fuzz', 'fizz']);
       });
 
       it('returns property of item in array', function () {
