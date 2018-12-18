@@ -1,11 +1,8 @@
 const _ = require('lodash');
 
 exports.raw = function raw({ document, query, select }) {
-  return rawRecursive({ document, query, select, shallow: false });
-}
-
-function rawRecursive({ document, query, select }) {
   const [part, ...restQuery] = query;
+  let results = [];
   let newValue;
 
   // TODO: test for part undefined
@@ -16,53 +13,47 @@ function rawRecursive({ document, query, select }) {
     newValue = _.get(document, part);
 
     // If it's a plain object, we can move on no matter if it's select for
-    // 'value' or 'values'.
+    // 'value' or 'values'. We will recurse until we find a value or array.
     if (_.isPlainObject(newValue)) {
-      return rawRecursive({
+      results.push(raw({
         document: newValue,
         query: restQuery,
         select
-      });
+      }));
     }
 
-    if (_.isArray(newValue)) {
-      let results = [];
+    else if (_.isArray(newValue)) {
+      // TODO: checks for types, like if all types are the same or if there are
+      // arrays within the array, which results in an error.
 
       for (let i = 0; i < newValue.length; i++) {
         let current = newValue[i];
-        let value;
 
-        // Objects need to be recursed, arrays need to throw an error, and all
-        // other values can just be added directly to the results array. 
-        //
-        // TODO: throw on error
         if (_.isPlainObject(current)) {
-          value = rawRecursive({
+          results.push(raw({
             document: current,
             query: restQuery,
             select
-          });
-        } else {
-          value = current;
+          }));
+
+          continue;
         }
 
-        // No need to continue the looping if we only need one value
-        if (select === 'value') {
-          return value;
-        }
+        // No special processing for the type, so we include current value
+        results.push(current);
 
-        results.push(value);
+        // No need to continue if we only need one value
+        if (select === 'value') break;
       }
-
-      return _.flatten(results);
     }
 
-    if (select === 'values') {
-      return [newValue];
+    else {
+      // No matches were found, so we just use the value
+      results.push(newValue);
     }
 
-    if (select === 'value') {
-      return newValue;
-    }
+    const flatResults = _.flatten(results);
+    if (select === 'values') return flatResults;
+    return flatResults[0]; // return the first value for 'value' query
   }
 }
