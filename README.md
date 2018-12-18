@@ -88,7 +88,8 @@ const document = {
 const result = queries.raw({
   document,
   query: ['foo', 'bar'],
-  select: 'value'
+  select: 'value',
+  latest: true
 });
 ```
 
