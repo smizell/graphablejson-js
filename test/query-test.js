@@ -119,5 +119,40 @@ describe('Query', function () {
         expect(results).to.eql(['bar', 'biz', 'fizz', 'buzz'])
       });
     });
+
+    context('latest', function () {
+      it('returns the latest value', function () {
+        const result1 = queries.raw({
+          document: {
+            foo: {
+              bar: 1,
+              bar__latest: true
+            }
+          },
+          query: ['foo', 'bar'],
+          select: 'value',
+          latest: true
+        });
+        expect(result1).to.equal(true);
+
+        const result2 = queries.raw({
+          document: {
+            foo: {
+              bar: true,
+            },
+            // Code should not follow latest until the last property This
+            // ensures that our code doesn't get greedy and follow the first
+            // latest.
+            foo__latest: {
+              bar: 1
+            }
+          },
+          query: ['foo', 'bar'],
+          select: 'value',
+          latest: true
+        });
+        expect(result2).to.equal(true);
+      });
+    });
   });
 });

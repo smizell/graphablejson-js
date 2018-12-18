@@ -1,6 +1,6 @@
 const _ = require('lodash');
 
-exports.raw = function raw({ document, query, select }) {
+exports.raw = function raw({ document, query, select, latest = false }) {
   const [part, ...restQuery] = query;
   let results = [];
   let newValue;
@@ -8,6 +8,16 @@ exports.raw = function raw({ document, query, select }) {
   // TODO: test for part undefined
   // TODO: throw on everything except object
   // TODO: cleanup logic as there is duplication
+
+  // If the user is looking for the special __latest value, we'll look for it first.
+  if (latest && restQuery.length === 0 && _.has(document, `${part}__latest`)) {
+    return raw({
+      document,
+      query: [`${part}__latest`, ...restQuery],
+      select,
+      latest
+    })
+  }
 
   if (_.has(document, part)) {
     newValue = _.get(document, part);
@@ -18,7 +28,8 @@ exports.raw = function raw({ document, query, select }) {
       results.push(raw({
         document: newValue,
         query: restQuery,
-        select
+        select,
+        latest
       }));
     }
 
@@ -33,7 +44,8 @@ exports.raw = function raw({ document, query, select }) {
           results.push(raw({
             document: current,
             query: restQuery,
-            select
+            select,
+            latest
           }));
 
           continue;
@@ -56,4 +68,5 @@ exports.raw = function raw({ document, query, select }) {
     if (select === 'values') return flatResults;
     return flatResults[0]; // return the first value for 'value' query
   }
+
 }

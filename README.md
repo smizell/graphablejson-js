@@ -71,6 +71,27 @@ const result = queries.raw({
 });
 ```
 
+You can also look for the latest properties to be able to evolve.
+
+```js
+const { queries } = require('moveablejson')
+
+// The document where we have the old and new values
+const document = {
+  foo: {
+    bar: 1,
+    bar__latest: true
+  }
+};
+
+// Result will be 'true'
+const result = queries.raw({
+  document,
+  query: ['foo', 'bar'],
+  select: 'value'
+});
+```
+
 ## Usage (Not Implemented)
 
 None of the API has been implemented. It is left here for the sake of exploring what this Moveable JSON idea could do.
