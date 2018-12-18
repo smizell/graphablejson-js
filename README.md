@@ -43,6 +43,36 @@ Moveable JSON aims to be a simple solution that allows clients to query the JSON
 
 ## Usage
 
+### `queries.raw`
+
+The `queries.raw` function takes a query object and returns the desired output.
+
+1. `document` is the object you want to query
+1. `query` is an array of path items
+1. `select` is either `value` or `values` depending on if you expect one versus more results
+
+```js
+const { queries } = require('moveablejson')
+
+// The document we want to query
+const document = {
+  foo: {
+    baz: {
+      bar: 'biz'
+    }
+  }
+};
+
+// Result will be 'biz'
+const result = queries.raw({
+  document,
+  query: ['foo', 'baz', 'bar'],
+  select: 'value'
+});
+```
+
+## Experimental Usage
+
 ### Selecting a Single Value
 
 At minimum, a select will return a single value it finds in an object.
