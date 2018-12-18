@@ -50,6 +50,7 @@ The `queries.raw` function takes a query object and returns the desired output.
 1. `document` is the object you want to query
 1. `query` is an array of path items
 1. `select` is either `value` or `values` depending on if you expect one versus more results
+1. `latest` is `true` or `false` depending on if you want to get __latest value
 
 ```js
 const { queries } = require('moveablejson')

@@ -10,7 +10,7 @@ exports.raw = function raw({ document, query, select, latest = false }) {
   // TODO: cleanup logic as there is duplication
 
   // If the user is looking for the special __latest value, we'll look for it first.
-  if (latest && restQuery.length === 0 && _.has(document, `${part}__latest`)) {
+  if (latest && _.has(document, `${part}__latest`)) {
     return raw({
       document,
       query: [`${part}__latest`, ...restQuery],

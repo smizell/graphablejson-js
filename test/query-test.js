@@ -138,13 +138,11 @@ describe('Query', function () {
         const result2 = queries.raw({
           document: {
             foo: {
-              bar: true,
+              bar: 1,
             },
-            // Code should not follow latest until the last property This
-            // ensures that our code doesn't get greedy and follow the first
-            // latest.
+            // Code should follow latest on each property
             foo__latest: {
-              bar: 1
+              bar: true
             }
           },
           query: ['foo', 'bar'],
