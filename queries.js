@@ -53,9 +53,6 @@ exports.raw = function raw({ document, query, select, latest = false }) {
 
         // No special processing for the type, so we include current value
         results.push(current);
-
-        // No need to continue if we only need one value
-        if (select === 'value') break;
       }
     }
 
@@ -64,9 +61,6 @@ exports.raw = function raw({ document, query, select, latest = false }) {
       results.push(newValue);
     }
 
-    const flatResults = _.flatten(results);
-    if (select === 'values') return flatResults;
-    return flatResults[0]; // return the first value for 'value' query
+    return _.flatten(results);
   }
-
 }
