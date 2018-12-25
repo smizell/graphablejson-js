@@ -1,6 +1,11 @@
 const { expect } = require('chai');
+const axios = require('axios');
+const MockAdapter = require('axios-mock-adapter');
 const { queries } = require('..');
 
+const mock = new MockAdapter(axios);
+
+// Convert an async generator into an array
 async function allItems(gen) {
   let items = [];
   for await (const item of gen) {
@@ -102,6 +107,38 @@ describe('Query', function () {
           latest: true
         });
         expect(await allItems(result2)).to.eql([true]);
+      });
+    });
+
+    context('linking documents', function () {
+      it('follows links with snake case', async function () {
+        mock.onGet('/foo').reply(200, {
+          bar: 'baz'
+        });
+
+        const result = await queries.raw({
+          document: { foo_url: '/foo' },
+          query: ['foo', 'bar']
+        });
+
+        expect(await allItems(result)).to.eql(['baz']);
+
+        mock.reset();
+      });
+
+      it('follows links with camel case', async function () {
+        mock.onGet('/foo').reply(200, {
+          bar: 'baz'
+        });
+
+        const result = await queries.raw({
+          document: { fooUrl: '/foo' },
+          query: ['foo', 'bar']
+        });
+
+        expect(await allItems(result)).to.eql(['baz']);
+
+        mock.reset();
       });
     });
   });
