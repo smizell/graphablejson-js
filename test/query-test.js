@@ -16,7 +16,7 @@ async function allItems(gen) {
 
 describe('Query', function () {
   describe('raw', function () {
-    context('values', function () {
+    context('recursive values', function () {
       it('returns direct values', async function () {
         const result = await queries.raw({
           document: { foo: 'bar' },
@@ -76,37 +76,6 @@ describe('Query', function () {
           query: ['baz']
         });
         expect(await allItems(result)).to.eql(['bar']);
-      });
-    });
-
-    context('latest', function () {
-      it('returns the latest value', async function () {
-        const result1 = queries.raw({
-          document: {
-            foo: {
-              bar: 1,
-              bar__latest: true
-            }
-          },
-          query: ['foo', 'bar'],
-          latest: true
-        });
-        expect(await allItems(result1)).to.eql([true]);
-
-        const result2 = queries.raw({
-          document: {
-            foo: {
-              bar: 1,
-            },
-            // Code should follow latest on each property
-            foo__latest: {
-              bar: true
-            }
-          },
-          query: ['foo', 'bar'],
-          latest: true
-        });
-        expect(await allItems(result2)).to.eql([true]);
       });
     });
 

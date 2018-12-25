@@ -1,27 +1,17 @@
 const axios = require('axios');
 const _ = require('lodash');
 
-exports.raw = async function* raw({ document, query, latest = false }) {
+exports.raw = async function* raw({ document, query }) {
   // TODO: test for part undefined
   // TODO: throw on everything except object
 
   if (_.isPlainObject(document)) {
     const [key, ...restQuery] = query;
 
-    // If the user is looking for the special __latest value, we'll look for it first.
-    if (latest && `${key}__latest` in document) {
-      yield* raw({
-        document: document,
-        query: [`${key}__latest`, ...restQuery],
-        latest
-      });
-    }
-
-    else if (key in document) {
+    if (key in document) {
       yield* await raw({
         document: document[key],
-        query: restQuery,
-        latest
+        query: restQuery
       })
     }
 
@@ -34,8 +24,7 @@ exports.raw = async function* raw({ document, query, latest = false }) {
 
       yield* await raw({
         document: resp.data,
-        query: restQuery,
-        latest
+        query: restQuery
       });
     }
   }
@@ -44,8 +33,7 @@ exports.raw = async function* raw({ document, query, latest = false }) {
     for (let i in document) {
       yield* raw({
         document: document[i],
-        query,
-        latest
+        query
       });
     }
   }

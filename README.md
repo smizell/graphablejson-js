@@ -72,32 +72,9 @@ const result = await queries.raw({
 });
 ```
 
-You can also look for the latest properties to be able to evolve.
-
-```js
-const { queries } = require('moveablejson')
-
-// The document where we have the old and new values
-// Latest looks for the name ending with __latest
-// It will fallback to the property without __latest if it can't find it
-const document = {
-  foo: {
-    bar: 1,
-    bar__latest: true
-  }
-};
-
-// Result will be ['true']
-const result = await queries.raw({
-  document,
-  query: ['foo', 'bar'],
-  latest: true
-});
-```
-
 ### Web Aware with RESTful JSON
 
-The `raw` query will follow links if it finds one in place of a property. This allows for API responses to evolve without breaking queries.
+The `raw` query will follow links represented in [RESTful JSON](https://restfuljson.org) if it finds one in place of a property. This allows for API responses to evolve without breaking queries.
 
 Let's say the current document we have is an `order` and looks like:
 
@@ -120,6 +97,8 @@ And the customer found at `/customers/4` is:
 The query below will result in the correct `first_name`.
 
 ```js
+const { queries } = require('moveablejson')
+
 // Result will be ['John']
 const result1 = await queries.raw({
   document: {
