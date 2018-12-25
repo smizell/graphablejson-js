@@ -51,6 +51,8 @@ The `queries.raw` function takes a query object and returns the desired output.
 1. `query` is an array of path items
 1. `latest` is `true` or `false` depending on if you want to get __latest value
 
+It relies on async generators for returning results. These values can be iterated over and resolved like with any async generator. Using `await` is always required because there may be links in the document to follow.
+
 ```js
 const { queries } = require('moveablejson')
 
@@ -66,8 +68,7 @@ const document = {
 // Result will be 'biz'
 const result = await queries.raw({
   document,
-  query: ['foo', 'baz', 'bar'],
-  select: 'value'
+  query: ['foo', 'baz', 'bar']
 });
 ```
 
