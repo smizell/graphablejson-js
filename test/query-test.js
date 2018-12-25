@@ -9,7 +9,7 @@ describe('Query', function () {
           document: { foo: 'bar' },
           query: ['foo'],
         });
-        expect(result).to.eql(['bar']);
+        expect([...result]).to.eql(['bar']);
       });
 
       it('returns the full array', function () {
@@ -17,7 +17,7 @@ describe('Query', function () {
           document: { foo: ['bar', 'baz'] },
           query: ['foo'],
         });
-        expect(result).to.eql(['bar', 'baz']);
+        expect([...result]).to.eql(['bar', 'baz']);
       });
 
       it('returns nested direct values', function () {
@@ -26,7 +26,7 @@ describe('Query', function () {
           query: ['foo', 'baz'],
           select: 'values'
         });
-        expect(result).to.eql(['bar']);
+        expect([...result]).to.eql(['bar']);
       });
 
       it('returns nested first of array', function () {
@@ -34,7 +34,7 @@ describe('Query', function () {
           document: { foo: { baz: ['bar', 'fuzz', 'fizz'] } },
           query: ['foo', 'baz'],
         });
-        expect(result).to.eql(['bar', 'fuzz', 'fizz']);
+        expect([...result]).to.eql(['bar', 'fuzz', 'fizz']);
       });
 
       it('returns property of item in array', function () {
@@ -43,7 +43,7 @@ describe('Query', function () {
           query: ['foo', 'baz'],
           select: 'values'
         });
-        expect(result).to.eql(['bar', 'fuzz']);
+        expect([...result]).to.eql(['bar', 'fuzz']);
       });
 
       it('flattens deeply nested values', function () {
@@ -56,7 +56,7 @@ describe('Query', function () {
           },
           query: ['foo', 'baz'],
         });
-        expect(results).to.eql(['bar', 'biz', 'fizz', 'buzz'])
+        expect([...results]).to.eql(['bar', 'biz', 'fizz', 'buzz'])
       });
     });
 
@@ -72,7 +72,7 @@ describe('Query', function () {
           query: ['foo', 'bar'],
           latest: true
         });
-        expect(result1).to.eql([true]);
+        expect([...result1]).to.eql([true]);
 
         const result2 = queries.raw({
           document: {
@@ -87,7 +87,7 @@ describe('Query', function () {
           query: ['foo', 'bar'],
           latest: true
         });
-        expect(result2).to.eql([true]);
+        expect([...result2]).to.eql([true]);
       });
     });
   });
