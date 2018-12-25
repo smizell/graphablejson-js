@@ -1,51 +1,59 @@
 const { expect } = require('chai');
 const { queries } = require('..');
 
+async function allItems(gen) {
+  let items = [];
+  for await (const item of gen) {
+    items.push(item);
+  }
+  return items
+}
+
 describe('Query', function () {
   describe('raw', function () {
     context('values', function () {
-      it('returns direct values', function () {
-        const result = queries.raw({
+      it('returns direct values', async function () {
+        const result = await queries.raw({
           document: { foo: 'bar' },
           query: ['foo']
         });
-        expect([...result]).to.eql(['bar']);
+        expect(await allItems(result)).to.eql(['bar']);
       });
 
-      it('returns the full array', function () {
+      it('returns the full array', async function () {
         const result = queries.raw({
           document: { foo: ['bar', 'baz'] },
           query: ['foo']
         });
-        expect([...result]).to.eql(['bar', 'baz']);
+        expect(await allItems(result)).to.eql(['bar', 'baz']);
       });
 
-      it('returns nested direct values', function () {
+      it('returns nested direct values', async function () {
         const result = queries.raw({
           document: { foo: { baz: 'bar' } },
           query: ['foo', 'baz']
         });
-        expect([...result]).to.eql(['bar']);
+        expect(await allItems(result)).to.eql(['bar']);
       });
 
-      it('returns nested first of array', function () {
+      it('returns nested first of array', async function () {
         const result = queries.raw({
           document: { foo: { baz: ['bar', 'fuzz', 'fizz'] } },
           query: ['foo', 'baz']
         });
-        expect([...result]).to.eql(['bar', 'fuzz', 'fizz']);
+        expect(await allItems(result)).to.eql(['bar', 'fuzz', 'fizz']);
       });
 
-      it('returns property of item in array', function () {
+      it('returns property of item in array', async function () {
         const result = queries.raw({
           document: { foo: [{ baz: 'bar' }, { baz: 'fuzz' }] },
           query: ['foo', 'baz']
         });
-        expect([...result]).to.eql(['bar', 'fuzz']);
+        expect(await allItems(result)).to.eql(['bar', 'fuzz']);
       });
 
-      it('flattens deeply nested values', function () {
-        const results = queries.raw({
+      it('flattens deeply nested values', async function () {
+        const result = queries.raw({
           document: {
             foo: [
               { baz: ['bar', 'biz'] },
@@ -54,20 +62,20 @@ describe('Query', function () {
           },
           query: ['foo', 'baz']
         });
-        expect([...results]).to.eql(['bar', 'biz', 'fizz', 'buzz'])
+        expect(await allItems(result)).to.eql(['bar', 'biz', 'fizz', 'buzz'])
       });
 
-      it('handles arrays as inputs', function () {
+      it('handles arrays as inputs', async function () {
         const result = queries.raw({
           document: [{ baz: 'bar' }],
           query: ['baz']
         });
-        expect([...result]).to.eql(['bar']);
+        expect(await allItems(result)).to.eql(['bar']);
       });
     });
 
     context('latest', function () {
-      it('returns the latest value', function () {
+      it('returns the latest value', async function () {
         const result1 = queries.raw({
           document: {
             foo: {
@@ -78,7 +86,7 @@ describe('Query', function () {
           query: ['foo', 'bar'],
           latest: true
         });
-        expect([...result1]).to.eql([true]);
+        expect(await allItems(result1)).to.eql([true]);
 
         const result2 = queries.raw({
           document: {
@@ -93,7 +101,7 @@ describe('Query', function () {
           query: ['foo', 'bar'],
           latest: true
         });
-        expect([...result2]).to.eql([true]);
+        expect(await allItems(result2)).to.eql([true]);
       });
     });
   });

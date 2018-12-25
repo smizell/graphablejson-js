@@ -1,9 +1,8 @@
 const _ = require('lodash');
 
-exports.raw = function* raw({ document, query, latest = false }) {
+exports.raw = async function* raw({ document, query, latest = false }) {
   // TODO: test for part undefined
   // TODO: throw on everything except object
-  // TODO: cleanup logic as there is duplication
 
   if (_.isPlainObject(document)) {
     const [key, ...restQuery] = query;
@@ -18,7 +17,7 @@ exports.raw = function* raw({ document, query, latest = false }) {
     }
 
     else if (key in document) {
-      yield* raw({
+      yield* await raw({
         document: document[key],
         query: restQuery,
         latest
