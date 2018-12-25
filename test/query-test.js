@@ -7,7 +7,7 @@ describe('Query', function () {
       it('returns direct values', function () {
         const result = queries.raw({
           document: { foo: 'bar' },
-          query: ['foo'],
+          query: ['foo']
         });
         expect([...result]).to.eql(['bar']);
       });
@@ -15,7 +15,7 @@ describe('Query', function () {
       it('returns the full array', function () {
         const result = queries.raw({
           document: { foo: ['bar', 'baz'] },
-          query: ['foo'],
+          query: ['foo']
         });
         expect([...result]).to.eql(['bar', 'baz']);
       });
@@ -23,8 +23,7 @@ describe('Query', function () {
       it('returns nested direct values', function () {
         const result = queries.raw({
           document: { foo: { baz: 'bar' } },
-          query: ['foo', 'baz'],
-          select: 'values'
+          query: ['foo', 'baz']
         });
         expect([...result]).to.eql(['bar']);
       });
@@ -32,7 +31,7 @@ describe('Query', function () {
       it('returns nested first of array', function () {
         const result = queries.raw({
           document: { foo: { baz: ['bar', 'fuzz', 'fizz'] } },
-          query: ['foo', 'baz'],
+          query: ['foo', 'baz']
         });
         expect([...result]).to.eql(['bar', 'fuzz', 'fizz']);
       });
@@ -40,8 +39,7 @@ describe('Query', function () {
       it('returns property of item in array', function () {
         const result = queries.raw({
           document: { foo: [{ baz: 'bar' }, { baz: 'fuzz' }] },
-          query: ['foo', 'baz'],
-          select: 'values'
+          query: ['foo', 'baz']
         });
         expect([...result]).to.eql(['bar', 'fuzz']);
       });
@@ -54,9 +52,17 @@ describe('Query', function () {
               { baz: ['fizz', 'buzz'] },
             ]
           },
-          query: ['foo', 'baz'],
+          query: ['foo', 'baz']
         });
         expect([...results]).to.eql(['bar', 'biz', 'fizz', 'buzz'])
+      });
+
+      it('handles arrays as inputs', function () {
+        const result = queries.raw({
+          document: [{ baz: 'bar' }],
+          query: ['baz']
+        });
+        expect([...result]).to.eql(['bar']);
       });
     });
 
