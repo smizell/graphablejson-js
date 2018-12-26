@@ -194,25 +194,32 @@ await queries.raw({
   document: doc1,
   query: ['order', 'order_number']
 });
+```
 
-// Below shows the same values changing to use a collection.
-//
-// A collection is denoted by the $item property
-// Remember that values can be arrays or single values, so $item can be either an
-// array of items or a single item.
-//
-// Let's say this is what page 2 might be.
-// {
-//   url: 'https://example.com/orders?page=2',
-//   $item: [
-//     {
-//       url: 'https://example.com/order/1236',
-//       order_number: '1236',
-//       total_amount: '$100.00'
-//     }
-//   ],
-//   prev_url: 'https://example.com/orders?page=1'
-// }
+Below shows the same values changing to use a collection.
+
+A collection is denoted by the `$item` property. Remember that values can be arrays or single values, so $item can be either an
+array of items or a single item.
+
+Let's say this is what page 2 might be.
+
+```js
+{
+  url: 'https://example.com/orders?page=2',
+  $item: [
+    {
+      url: 'https://example.com/order/1236',
+      order_number: '1236',
+      total_amount: '$100.00'
+    }
+  ],
+  prev_url: 'https://example.com/orders?page=1'
+}
+```
+
+Here is the collection now where the second page is linked with `next_url`.
+
+```js
 const doc2 = {
   url: 'https://example.com/customer/4538',
   order: {
