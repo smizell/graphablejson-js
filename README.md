@@ -49,15 +49,43 @@ The `queries.raw` function takes a query object and returns the desired output.
 
 1. `document` is the object you want to query
 1. `query` is an array of path items
-1. `latest` is `true` or `false` depending on if you want to get __latest value
 
 It relies on async generators for returning results. These values can be iterated over and resolved like with any async generator. Using `await` is always required because there may be links in the document to follow.
+
+Going back to our example above, our client will not break whether a value is a single value or an array of values.
 
 ```js
 const { queries } = require('moveablejson')
 
 // The document we want to query
-const document = {
+const document1 = {
+  email: 'johndoe@example.com'
+};
+
+const document2 = {
+  email: ['johndoe@example.com']
+};
+
+// Result will be ['johndoe@example.com']
+const result1 = await queries.raw({
+  document: document1,
+  query: ['email']
+});
+
+// Result will also be ['johndoe@example.com']
+const result2 = await queries.raw({
+  document: document2,
+  query: ['email']
+});
+```
+
+This also works recursively with objects and arrays.
+
+```js
+const { queries } = require('moveablejson')
+
+// Only uses objects
+const document1 = {
   foo: {
     baz: {
       bar: 'biz'
@@ -65,9 +93,26 @@ const document = {
   }
 };
 
+// foo is now an array of objects
+const document2 = {
+  foo: [
+    {
+      baz: {
+        bar: 'biz'
+      }
+    }
+  ]
+};
+
 // Result will be 'biz'
-const result = await queries.raw({
-  document,
+await queries.raw({
+  document: document1,
+  query: ['foo', 'baz', 'bar']
+});
+
+// Result will be also be 'biz'
+await queries.raw({
+  document: document2,
   query: ['foo', 'baz', 'bar']
 });
 ```
@@ -118,6 +163,101 @@ const result2 = await queries.raw({
     }
   },
   query: ['customer', 'first_name']
+});
+```
+
+### Collections
+
+Additionally, APIs may need to return a partial set of items and let the client request more if necessary by way of pagination. A collection object is used to make this possible. It wraps values with an `$item` property so the JSON can move from values, to arrays, to paginated arrays.
+
+```js
+const query = new Query().select('order.order_number').values();
+
+const doc1 = {
+  url: 'https://example.com/customer/4538',
+  order: [
+    {
+      url: 'https://example.com/order/1234',
+      order_number: '1234',
+      total_amount: '$100.00'
+    },
+    {
+      url: 'https://example.com/order/1235',
+      order_number: '1235',
+      total_amount: '$120.00'
+    }
+  ]
+};
+
+// Returns ['1234', '1235']
+await queries.raw({
+  document: doc1,
+  query: ['order', 'order_number']
+});
+
+// Below shows the same values changing to use a collection.
+//
+// A collection is denoted by the $item property
+// Remember that values can be arrays or single values, so $item can be either an
+// array of items or a single item.
+//
+// Let's say this is what page 2 might be.
+// {
+//   url: 'https://example.com/orders?page=2',
+//   $item: [
+//     {
+//       url: 'https://example.com/order/1236',
+//       order_number: '1236',
+//       total_amount: '$100.00'
+//     }
+//   ],
+//   prev_url: 'https://example.com/orders?page=1'
+// }
+const doc2 = {
+  url: 'https://example.com/customer/4538',
+  order: {
+    url: 'https://example.com/orders?page=1',
+    $item: [
+      {
+        url: 'https://example.com/order/1234',
+        order_number: '1234',
+        total_amount: '$100.00'
+      },
+      {
+        url: 'https://example.com/order/1235',
+        order_number: '1235',
+        total_amount: '$120.00'
+      }
+    ],
+    next_url: 'https://example.com/orders?page=2'
+  }
+});
+
+// This will return ['1234', '1235', '1236']
+await queries.raw({
+  document: doc2,
+  query: ['order', 'order_number']
+});
+```
+
+Combining `$item` with RESTful JSON lets collections provide several links to other values, allowing API designers to reduce collection size so that each item can be requested and cached individually.
+
+```js
+const doc3 = {
+  order: {
+    url: 'https://example.com/orders?page=1',
+    $item_url: [
+      'https://example.com/orders/1234',
+      'https://example.com/orders/1235'
+    ],
+    next_url: 'https://example.com/orders?page=2'
+  }
+};
+
+// This will return ['1234', '1235', '1236'] if the resources are the same as above.
+await queries.raw({
+  document: doc3,
+  query: ['order', 'order_number']
 });
 ```
 

@@ -169,6 +169,55 @@ describe('Query', function () {
 
         mock.reset();
       });
+
+      it('handles linked items', async function () {
+        mock.onGet('/customers?page=1').reply(200, {
+          next_url: '/customers?page=2',
+          $item_url: [
+            '/customers/1',
+            '/customers/2'
+          ]
+        });
+
+        mock.onGet('/customers?page=2').reply(200, {
+          $item_url: [
+            '/customers/3',
+            '/customers/4'
+          ]
+        });
+
+        mock.onGet('/customers/1').reply(200, {
+          email: 'jdoe@example.com'
+        });
+
+        mock.onGet('/customers/2').reply(200, {
+          email: 'rdavis@example.com'
+        });
+
+        mock.onGet('/customers/3').reply(200, {
+          email: 'fsmith@example.com'
+        });
+
+        mock.onGet('/customers/4').reply(200, {
+          email: 'sjohnson@example.com'
+        });
+
+        // This follows the customer link, follows all $item_url links, then follows
+        // the next links until it's finished.
+        const result = await queries.raw({
+          document: { customer_url: '/customers?page=1' },
+          query: ['customer', 'email']
+        });
+
+        expect(await allItems(result)).to.eql([
+          'jdoe@example.com',
+          'rdavis@example.com',
+          'fsmith@example.com',
+          'sjohnson@example.com',
+        ]);
+
+        mock.reset();
+      });
     });
   });
 });

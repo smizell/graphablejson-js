@@ -8,7 +8,7 @@ exports.raw = raw = async function* raw({ document, query }) {
   if (_.isPlainObject(document)) {
     const [key, ...restQuery] = query;
 
-    // Handle collections
+    // Handle included collections
     if ('$item' in document) {
       yield* await raw({
         document: document.$item,
@@ -17,18 +17,16 @@ exports.raw = raw = async function* raw({ document, query }) {
 
       // Follow paginated links
       if (hasLink(document, 'next')) {
-        const linkName = getLinkName(document, 'next');
-        const link = document[linkName];
+        yield* await followLink(document, 'next', query);
+      }
+    }
 
-        if (_.isArray(link)) {
-          for (let item of link) {
-            yield* await followLink(item, query);
-          }
-        }
+    else if (hasLink(document, '$item')) {
+      yield* await followLink(document, '$item', query);
 
-        else {
-          yield* await followLink(link, query);
-        }
+      // Follow paginated links
+      if (hasLink(document, 'next')) {
+        yield* await followLink(document, 'next', query);
       }
     }
 
@@ -42,18 +40,7 @@ exports.raw = raw = async function* raw({ document, query }) {
 
     // Handle linked properties
     else if (hasLink(document, key)) {
-      const linkName = getLinkName(document, key);
-      const link = document[linkName];
-
-      if (_.isArray(link)) {
-        for (let item of link) {
-          yield* await followLink(item, restQuery);
-        }
-      }
-
-      else {
-        yield* await followLink(link, restQuery);
-      }
+      yield* await followLink(document, key, restQuery);
     }
   }
 
@@ -79,12 +66,26 @@ function getLinkName(document, key) {
   return `${key}_url` in document ? `${key}_url` : `${key}Url`;
 }
 
-async function* followLink(url, query) {
+async function* followLink(document, key, query) {
   // TODO: needs error handling
-  let resp = await axios.get(url);
+  const linkName = getLinkName(document, key);
+  const link = document[linkName];
 
-  yield* await raw({
-    document: resp.data,
-    query
-  });
+  if (_.isArray(link)) {
+    for (let item of link) {
+      let resp = await axios.get(item);
+      yield* await raw({
+        document: resp.data,
+        query
+      });
+    }
+  }
+
+  else {
+    let resp = await axios.get(link);
+    yield* await raw({
+      document: resp.data,
+      query
+    });
+  }
 }
