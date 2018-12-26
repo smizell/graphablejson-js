@@ -1,4 +1,4 @@
-# Follow Links
+# Moveable JSON Follow Links Example
 
 This Moveable JSON library will follow links when it finds them in place of regular properties. This means that if you query for `order` and it's missing, this library will look for `order_url` and resolve the link then continue traversing. 
 
