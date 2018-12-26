@@ -13,6 +13,8 @@ This example shows all of these scenarios.
 
 ## Usage
 
+A [sample API](https://moveablejsonapi.glitch.me/) has been created for this on Glitch. You can navigate there and see what the API looks like.
+
 1. Clone this repository with `git clone https://github.com/smizell/moveablejson.git`
 1. Navigate to this directory `cd moveablejson/examples/follow-links`
 1. Install packages with `npm install`
