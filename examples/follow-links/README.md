@@ -19,4 +19,4 @@ This example shows all of these scenarios through a [sample API](https://moveabl
 1. Run the example `node index.js example1`
 1. Run other examples listed above
 
-If you look at `index.js`, you'll see the query never changes, yet the output is the same for each query. This allows the structure to evolve without breaking clients.
+If you look at [index.js](index.js), you'll see the query never changes, yet the output is the same for each query. This allows the structure to evolve without breaking clients.
