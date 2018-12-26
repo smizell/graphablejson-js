@@ -16,6 +16,24 @@ async function allItems(gen) {
 
 describe('Query', function () {
   describe('raw', function () {
+    context('plain values', function () {
+      it('returns the single value', async function () {
+        const result = await queries.raw({
+          document: 42,
+          query: []
+        });
+        expect(await allItems(result)).to.eql([42]);
+      });
+
+      it('returns all values of the array', async function () {
+        const result = await queries.raw({
+          document: [1, 2, 3],
+          query: []
+        });
+        expect(await allItems(result)).to.eql([1, 2, 3]);
+      });
+    });
+
     context('recursive values', function () {
       it('returns direct values', async function () {
         const result = await queries.raw({
