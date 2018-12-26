@@ -14,18 +14,18 @@ exports.raw = raw = async function* raw({ document, query = [] }) {
 
       // Follow paginated links
       if (hasLink(document, 'next')) {
-        yield* followLink(document, 'next', query);
+        yield* followDocumentLinks(document, 'next', query);
       }
     }
 
     // Like normal properties, the `$item` for collection can be a link or an
     // array of links.
     else if (hasLink(document, '$item')) {
-      yield* followLink(document, '$item', query);
+      yield* followDocumentLinks(document, '$item', query);
 
       // Follow paginated links
       if (hasLink(document, 'next')) {
-        yield* followLink(document, 'next', query);
+        yield* followDocumentLinks(document, 'next', query);
       }
     }
 
@@ -39,7 +39,7 @@ exports.raw = raw = async function* raw({ document, query = [] }) {
 
     // If a properties isn't found, we can look for a link with the same name.
     else if (hasLink(document, key)) {
-      yield* followLink(document, key, restQuery);
+      yield* followDocumentLinks(document, key, restQuery);
     }
   }
 
@@ -66,19 +66,30 @@ function getLinkName(document, key) {
   return `${key}_url` in document ? `${key}_url` : `${key}Url`;
 }
 
-async function* followLink(document, key, query) {
-  // TODO: needs error handling
+async function* getDocumentUrls(document, key) {
   const linkName = getLinkName(document, key);
   const urlProp = document[linkName];
-  const urls = raw({ document: urlProp });
+  yield* raw({ document: urlProp });
+}
 
-  // This allows us to handle one or many URLs. We can let the `raw` function
-  // return a generator so that we can always loop over the URLs no matter what.
+async function* followDocumentLinks(document, key, query) {
+  const urls = getDocumentUrls(document, key);
+  yield* followLinks(urls, query);
+}
+
+// The urls argument should be an AsyncGenerator so that we can handle many URLs
+// at once. There may be one or many URLs in a document, so we treat it that
+// way.
+async function* followLinks(urls, query) {
   for await (let url of urls) {
-    let resp = await axios.get(url);
-    yield* raw({
-      document: resp.data,
-      query
-    });
+    yield* followLink(url, query);
   }
+}
+
+exports.followLink = followLink = async function* followLink(url, query) {
+  let resp = await axios.get(url);
+  yield* raw({
+    document: resp.data,
+    query
+  });
 }
