@@ -110,5 +110,46 @@ describe('Query', function () {
         mock.reset();
       });
     });
+
+    context('collection resources', function () {
+      it('handles included items', async function () {
+        mock.onGet('/customers?page=1').reply(200, {
+          next_url: '/customers?page=2',
+          $item: [
+            {
+              email: 'jdoe@example.com'
+            },
+            {
+              email: 'rdavis@example.com'
+            }
+          ]
+        });
+
+        mock.onGet('/customers?page=2').reply(200, {
+          $item: [
+            {
+              email: 'fsmith@example.com'
+            },
+            {
+              email: 'sjohnson@example.com'
+            }
+          ]
+        });
+
+        const result = await queries.raw({
+          document: { customer_url: '/customers?page=1' },
+          query: ['customer', 'email']
+        });
+
+        expect(await allItems(result)).to.eql([
+          'jdoe@example.com',
+          'rdavis@example.com',
+          'fsmith@example.com',
+          'sjohnson@example.com',
+        ]);
+
+        mock.reset();
+      });
+    });
   });
 });
