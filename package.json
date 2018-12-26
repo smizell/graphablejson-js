@@ -1,6 +1,6 @@
 {
   "name": "moveablejson",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "Get rid of the breaking changes we face with JSON in APIs",
   "main": "index.js",
   "scripts": {
