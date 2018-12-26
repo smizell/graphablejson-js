@@ -109,6 +109,25 @@ describe('Query', function () {
 
         mock.reset();
       });
+
+      it('follows multiple links', async function () {
+        mock.onGet('/foo/1').reply(200, {
+          bar: 'baz'
+        });
+
+        mock.onGet('/foo/2').reply(200, {
+          bar: 'biz'
+        });
+
+        const result = await queries.raw({
+          document: { foo_url: ['/foo/1', '/foo/2'] },
+          query: ['foo', 'bar']
+        });
+
+        expect(await allItems(result)).to.eql(['baz', 'biz']);
+
+        mock.reset();
+      });
     });
 
     context('collection resources', function () {

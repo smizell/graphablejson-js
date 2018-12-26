@@ -17,7 +17,18 @@ exports.raw = raw = async function* raw({ document, query }) {
 
       // Follow paginated links
       if (hasLink(document, 'next')) {
-        yield* await followLink(document, 'next', query);
+        const linkName = getLinkName(document, 'next');
+        const link = document[linkName];
+
+        if (_.isArray(link)) {
+          for (let item of link) {
+            yield* await followLink(item, query);
+          }
+        }
+
+        else {
+          yield* await followLink(link, query);
+        }
       }
     }
 
@@ -31,7 +42,18 @@ exports.raw = raw = async function* raw({ document, query }) {
 
     // Handle linked properties
     else if (hasLink(document, key)) {
-      yield* await followLink(document, key, restQuery);
+      const linkName = getLinkName(document, key);
+      const link = document[linkName];
+
+      if (_.isArray(link)) {
+        for (let item of link) {
+          yield* await followLink(item, restQuery);
+        }
+      }
+
+      else {
+        yield* await followLink(link, restQuery);
+      }
     }
   }
 
@@ -57,11 +79,8 @@ function getLinkName(document, key) {
   return `${key}_url` in document ? `${key}_url` : `${key}Url`;
 }
 
-async function* followLink(document, key, query) {
-  let linkName = getLinkName(document, key);
-
+async function* followLink(url, query) {
   // TODO: needs error handling
-  let url = document[linkName];
   let resp = await axios.get(url);
 
   yield* await raw({
