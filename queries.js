@@ -9,12 +9,14 @@ exports.getShape = getShape = async function getShape({ document, query }) {
   }
 
   for (let key in query.related || {}) {
-    let valueGen = getProperty(document, key);
-    let relatedDoc = (await valueGen.next()).value;
-    result[key] = await getShape({
-      document: relatedDoc,
-      query: query.related[key]
-    });
+    result[key] = [];
+
+    for await (let related of getProperty(document, key)) {
+      result[key].push(await getShape({
+        document: related,
+        query: query.related[key]
+      }));
+    }
   }
 
   return result;

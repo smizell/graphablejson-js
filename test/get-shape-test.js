@@ -39,9 +39,11 @@ describe('Get Shape', function () {
     };
     const expectedResult = {
       baz: [2],
-      foo: {
-        bar: [1]
-      }
+      foo: [
+        {
+          bar: [1]
+        }
+      ]
     };
     const result = await queries.getShape({ document, query })
     const resultObj = await utils.expandObject(result);
@@ -78,9 +80,11 @@ describe('Get Shape', function () {
         }
       };
       const expectedResult = {
-        foo: {
-          bar: [1]
-        }
+        foo: [
+          {
+            bar: [1]
+          }
+        ]
       };
       const result = await queries.getShape({ document, query })
       const resultObj = await utils.expandObject(result);

@@ -10,17 +10,23 @@ exports.expandValues = expandValues = async function expandValues(gen) {
 }
 
 exports.expandObject = async function expandObject(obj) {
-  const result = {};
+  let result = {};
 
   for (let key in obj) {
     let value = obj[key];
 
-    // For now assume anything that isn't an array is a generator
-    if (!_.isPlainObject(value)) {
-      result[key] = await expandValues(value);
+    if (_.isPlainObject(value)) {
+      result[key] = await expandObject(value);
     }
     else {
-      result[key] = await expandObject(value);
+      result[key] = [];
+      for await (let item of value) {
+        if (_.isPlainObject(item)) {
+          result[key].push(await expandObject(item));
+        } else {
+          result[key].push(item);
+        }
+      }
     }
   }
 
