@@ -170,7 +170,7 @@ await queries.getProperty(document3, 'order');
 
 ### `queries.getShape`
 
-The `rawShape` query allows for defining a structure to find in the API. Where `rawPath` allows for returning a single value, `rawShape` allows for returning many values and on nested objects. It uses `rawPath` for getting values, so links and collections work as defined above.
+The `getShape` query allows for defining a structure to find in the API. Where `getProperty` allows for returning a single value, `getShape` allows for returning many values and on nested objects. It uses `getProperty` for getting values, so links and collections work as defined above.
 
 ```js
 const { queries } = require('moveablejson')
