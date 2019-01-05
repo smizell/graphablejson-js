@@ -96,3 +96,31 @@ function isIncludedCollection(document) {
 function isLinkedCollection(document) {
   return hasLink(document, '$item');
 }
+
+exports.graphQlToShape = function (query) {
+  let result = { properties: [], related: {} };
+  (query.definitions).forEach(function (definition) {
+    (definition.selectionSet.selections).forEach(function (selection) {
+      if (selection.selectionSet) {
+        result.related[selection.name.value] = handleSelectionSet(selection.selectionSet);
+      }
+      else {
+        result.properties.push(selection.name.value);
+      }
+    });
+  });
+  return result;
+}
+
+function handleSelectionSet(selectionSet) {
+  let result = { properties: [], related: {} };
+  (selectionSet.selections).forEach(function (selection) {
+    if (selection.selectionSet) {
+      result.related[selection.name.value] = handleSelectionSet(selection.selectionSet);
+    }
+    else {
+      result.properties.push(selection.name.value);
+    }
+  });
+  return result;
+}
