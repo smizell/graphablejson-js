@@ -14,8 +14,8 @@ This example shows all of these scenarios through a [sample API](https://moveabl
 ## Usage
 
 1. Clone this repository with `git clone https://github.com/smizell/moveablejson.git`
+1. Install the code with `npm install`
 1. Navigate to this directory `cd moveablejson/examples/follow-links`
-1. Install packages with `npm install`
 1. Run the example `node index.js example1`
 1. Run other examples listed above
 

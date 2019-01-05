@@ -1,18 +1,16 @@
-const { queries } = require('moveablejson');
+const { queries, utils } = require('../..');
+const axios = require('axios');
 const apiUrl = 'https://moveablejsonapi.glitch.me';
 
 // Allow for changing examples through command line
-const example = process.argv[2] || 'example1';
-
-// Same query for every example to show it doesn't break
-const query = ['order', 'order_number'];
+const exampleId = process.argv[2] || 'example1';
 
 async function api() {
-  // All examples are in the same API, so we just prepend that to the query
-  const results = queries.followLink(apiUrl, [example, ...query]);
-
-  for await (let result of results) {
-    console.log(result);
+  const api = await axios.get(apiUrl);
+  const example = api.data[exampleId];
+  const orders = queries.getProperty(example, 'order');
+  for await (let order of orders) {
+    console.log(order);
   }
 }
 
