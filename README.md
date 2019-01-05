@@ -296,10 +296,10 @@ const query = {
   }
 }
 
-await queries.rawShape({
+const result = await queries.rawShape({
   document,
   query
 });
 ```
 
-Each property will be a generator to allow for one or many values
+Each property will be a generator to allow for one or many values.
