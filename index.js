@@ -1,3 +1,4 @@
 module.exports = {
-  queries: require('./queries')
+  queries: require('./queries'),
+  utils: require('./utils'),
 }

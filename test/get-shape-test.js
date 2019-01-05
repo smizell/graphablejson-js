@@ -1,35 +1,8 @@
 const { expect } = require('chai');
 const axios = require('axios');
 const MockAdapter = require('axios-mock-adapter');
-const _ = require('lodash');
 const { queries } = require('..');
-
-// Convert an async generator into an array
-async function allItems(gen) {
-  let items = [];
-  for await (const item of gen) {
-    items.push(item);
-  }
-  return items
-}
-
-async function fullObject(obj) {
-  const result = {};
-
-  for (let key in obj) {
-    let value = obj[key];
-
-    // For now assume anything that isn't an array is a generator
-    if (!_.isPlainObject(value)) {
-      result[key] = await allItems(value);
-    }
-    else {
-      result[key] = await fullObject(value);
-    }
-  }
-
-  return result;
-}
+const { utils } = require('..');
 
 describe('Get Shape', function () {
   it('finds existing attributes', async function () {
@@ -45,7 +18,7 @@ describe('Get Shape', function () {
       bar: [2]
     };
     const result = await queries.getShape({ document, query })
-    const resultObj = await fullObject(result);
+    const resultObj = await utils.expandObject(result);
     expect(resultObj).to.eql(expectedResult);
   });
 
@@ -71,7 +44,7 @@ describe('Get Shape', function () {
       }
     };
     const result = await queries.getShape({ document, query })
-    const resultObj = await fullObject(result);
+    const resultObj = await utils.expandObject(result);
     expect(resultObj).to.eql(expectedResult);
   });
 
@@ -110,7 +83,7 @@ describe('Get Shape', function () {
         }
       };
       const result = await queries.getShape({ document, query })
-      const resultObj = await fullObject(result);
+      const resultObj = await utils.expandObject(result);
       expect(resultObj).to.eql(expectedResult);
     });
   });

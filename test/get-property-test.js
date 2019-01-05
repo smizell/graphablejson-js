@@ -2,26 +2,17 @@ const { expect } = require('chai');
 const axios = require('axios');
 const MockAdapter = require('axios-mock-adapter');
 const { queries } = require('..');
-
-
-// Convert an async generator into an array
-async function allItems(gen) {
-  let items = [];
-  for await (const item of gen) {
-    items.push(item);
-  }
-  return items
-}
+const { utils } = require('..');
 
 describe('Get Property', function () {
   it('returns direct values', async function () {
     const result = await queries.getProperty({ foo: 'bar' }, 'foo');
-    expect(await allItems(result)).to.eql(['bar']);
+    expect(await utils.expandValues(result)).to.eql(['bar']);
   });
 
   it('returns the full array', async function () {
     const result = queries.getProperty({ foo: ['bar', 'baz'] }, 'foo');
-    expect(await allItems(result)).to.eql(['bar', 'baz']);
+    expect(await utils.expandValues(result)).to.eql(['bar', 'baz']);
   });
 
   context('following links', function () {
@@ -43,20 +34,20 @@ describe('Get Property', function () {
       it('follows links with snake case', async function () {
         mock.onGet('/foo').reply(200, 'baz');
         const result = await queries.getProperty({ foo_url: '/foo' }, 'foo');
-        expect(await allItems(result)).to.eql(['baz']);
+        expect(await utils.expandValues(result)).to.eql(['baz']);
       });
 
       it('follows links with camel case', async function () {
         mock.onGet('/foo').reply(200, 'baz');
         const result = await queries.getProperty({ fooUrl: '/foo' }, 'foo');
-        expect(await allItems(result)).to.eql(['baz']);
+        expect(await utils.expandValues(result)).to.eql(['baz']);
       });
 
       it('follows multiple links', async function () {
         mock.onGet('/foo/1').reply(200, 'baz');
         mock.onGet('/foo/2').reply(200, 'biz');
         const result = await queries.getProperty({ foo_url: ['/foo/1', '/foo/2'] }, 'foo');
-        expect(await allItems(result)).to.eql(['baz', 'biz']);
+        expect(await utils.expandValues(result)).to.eql(['baz', 'biz']);
       });
     });
 
@@ -86,7 +77,7 @@ describe('Get Property', function () {
         });
 
         const customers = queries.getProperty({ customer_url: '/customers?page=1' }, 'customer');
-        const emails = (await allItems(customers)).map(customer => customer.email);
+        const emails = (await utils.expandValues(customers)).map(customer => customer.email);
 
         expect(emails).to.eql([
           'jdoe@example.com',
@@ -129,7 +120,7 @@ describe('Get Property', function () {
         });
 
         const customers = queries.getProperty({ customer_url: '/customers?page=1' }, 'customer');
-        const emails = (await allItems(customers)).map(customer => customer.email);
+        const emails = (await utils.expandValues(customers)).map(customer => customer.email);
 
         expect(emails).to.eql([
           'jdoe@example.com',
