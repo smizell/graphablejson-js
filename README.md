@@ -8,14 +8,14 @@ Moveable JSON starts with the idea that clients shouldn't care if there are one 
 
 ## Usage
 
-### `queries.getProperty`
+### `getProperty`
 
 The `queries.getProperty` function takes a object and property and returns the values for the property. It will always return a generator, so if a property is a single value or array of values, it will be treated as a generator.
 
 Going back to our example above, our client will not break whether a value is a single value or an array of values.
 
 ```js
-const { queries } = require('moveablejson')
+const { getProperty } = require('moveablejson')
 
 // The document we want to query
 const document1 = {
@@ -27,10 +27,10 @@ const document2 = {
 };
 
 // Result will be ['johndoe@example.com']
-const result1 = await queries.getProperty(document1, 'email');
+const result1 = await getProperty(document1, 'email');
 
 // Result will also be ['johndoe@example.com']
-const result2 = await queries.getProperty(document2, 'email');
+const result2 = await getProperty(document2, 'email');
 ```
 
 ### Web Aware with RESTful JSON
@@ -58,15 +58,15 @@ And the customer found at `/customers/4` is:
 The query below will result in the response for `/customers/4`.
 
 ```js
-const { queries } = require('moveablejson')
+const { getProperty } = require('moveablejson')
 
-const result1 = await queries.getProperty({
+const result1 = await getProperty({
   "order_number": "1234",
   "customer_url": "/customers/4"
 }, 'customer');
 
 // This will be the same value as above, just without the API request
-const result2 = await queries.getProperty({
+const result2 = await getProperty({
   "order_number": "1234",
   "customer": {
     "first_name": "John",
@@ -80,8 +80,6 @@ const result2 = await queries.getProperty({
 Additionally, APIs may need to return a partial set of items and let the client request more if necessary by way of pagination. A collection object is used to make this possible. It wraps values with an `$item` property so the JSON can move from values, to arrays, to paginated arrays.
 
 ```js
-const query = new Query().select('order.order_number').values();
-
 const doc1 = {
   url: 'https://example.com/customer/4538',
   order: [
@@ -99,7 +97,7 @@ const doc1 = {
 };
 
 // Returns all of the order objects found directly in the object
-await queries.getProperty(document1, 'order');
+await getProperty(document1, 'order');
 ```
 
 Below shows the same values changing to use a collection.
@@ -147,7 +145,7 @@ const document2 = {
 });
 
 // Returns all of the orders found in the collection.
-await queries.getProperty(document2, 'order');
+await getProperty(document2, 'order');
 ```
 
 Combining `$item` with RESTful JSON lets collections provide several links to other values, allowing API designers to reduce collection size so that each item can be requested and cached individually.
@@ -165,15 +163,15 @@ const document3 = {
 };
 
 // Follows all of the $item_url values and returns the orders
-await queries.getProperty(document3, 'order');
+await getProperty(document3, 'order');
 ```
 
-### `queries.getShape`
+### `getShape`
 
 The `getShape` query allows for defining a structure to find in the API. Where `getProperty` allows for returning a single value, `getShape` allows for returning many values and on nested objects. It uses `getProperty` for getting values, so links and collections work as defined above.
 
 ```js
-const { queries } = require('moveablejson')
+const { getShape } = require('moveablejson')
 
 // The document we want to query
 const document = {
@@ -196,7 +194,7 @@ const query = {
   }
 }
 
-const result = await queries.getShape({
+const result = await getShape({
   document,
   query
 });

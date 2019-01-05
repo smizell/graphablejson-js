@@ -1,4 +1,4 @@
-const { queries, utils } = require('../..');
+const { getShape, utils } = require('../..');
 const axios = require('axios');
 const util = require('util');
 const apiUrl = 'https://moveablejsonapi.glitch.me';
@@ -10,7 +10,7 @@ async function api() {
   console.log(exampleId)
   const api = await axios.get(apiUrl);
   const example = api.data[exampleId];
-  const value = await queries.getShape({
+  const value = await getShape({
     document: example,
     query: {
       properties: ['customer_number'],

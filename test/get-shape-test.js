@@ -1,7 +1,7 @@
 const { expect } = require('chai');
 const axios = require('axios');
 const MockAdapter = require('axios-mock-adapter');
-const { queries } = require('..');
+const { getShape } = require('..');
 const { utils } = require('..');
 
 describe('Get Shape', function () {
@@ -17,7 +17,7 @@ describe('Get Shape', function () {
       foo: [1],
       bar: [2]
     };
-    const result = await queries.getShape({ document, query })
+    const result = await getShape({ document, query })
     const resultObj = await utils.expandObject(result);
     expect(resultObj).to.eql(expectedResult);
   });
@@ -45,7 +45,7 @@ describe('Get Shape', function () {
         }
       ]
     };
-    const result = await queries.getShape({ document, query })
+    const result = await getShape({ document, query })
     const resultObj = await utils.expandObject(result);
     expect(resultObj).to.eql(expectedResult);
   });
@@ -86,7 +86,7 @@ describe('Get Shape', function () {
           }
         ]
       };
-      const result = await queries.getShape({ document, query })
+      const result = await getShape({ document, query })
       const resultObj = await utils.expandObject(result);
       expect(resultObj).to.eql(expectedResult);
     });

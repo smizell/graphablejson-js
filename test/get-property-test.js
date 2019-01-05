@@ -1,17 +1,17 @@
 const { expect } = require('chai');
 const axios = require('axios');
 const MockAdapter = require('axios-mock-adapter');
-const { queries } = require('..');
+const { getProperty } = require('..');
 const { utils } = require('..');
 
 describe('Get Property', function () {
   it('returns direct values', async function () {
-    const result = await queries.getProperty({ foo: 'bar' }, 'foo');
+    const result = await getProperty({ foo: 'bar' }, 'foo');
     expect(await utils.expandValues(result)).to.eql(['bar']);
   });
 
   it('returns the full array', async function () {
-    const result = queries.getProperty({ foo: ['bar', 'baz'] }, 'foo');
+    const result = getProperty({ foo: ['bar', 'baz'] }, 'foo');
     expect(await utils.expandValues(result)).to.eql(['bar', 'baz']);
   });
 
@@ -33,20 +33,20 @@ describe('Get Property', function () {
     context('linking documents', function () {
       it('follows links with snake case', async function () {
         mock.onGet('/foo').reply(200, 'baz');
-        const result = await queries.getProperty({ foo_url: '/foo' }, 'foo');
+        const result = await getProperty({ foo_url: '/foo' }, 'foo');
         expect(await utils.expandValues(result)).to.eql(['baz']);
       });
 
       it('follows links with camel case', async function () {
         mock.onGet('/foo').reply(200, 'baz');
-        const result = await queries.getProperty({ fooUrl: '/foo' }, 'foo');
+        const result = await getProperty({ fooUrl: '/foo' }, 'foo');
         expect(await utils.expandValues(result)).to.eql(['baz']);
       });
 
       it('follows multiple links', async function () {
         mock.onGet('/foo/1').reply(200, 'baz');
         mock.onGet('/foo/2').reply(200, 'biz');
-        const result = await queries.getProperty({ foo_url: ['/foo/1', '/foo/2'] }, 'foo');
+        const result = await getProperty({ foo_url: ['/foo/1', '/foo/2'] }, 'foo');
         expect(await utils.expandValues(result)).to.eql(['baz', 'biz']);
       });
     });
@@ -76,7 +76,7 @@ describe('Get Property', function () {
           ]
         });
 
-        const customers = queries.getProperty({ customer_url: '/customers?page=1' }, 'customer');
+        const customers = getProperty({ customer_url: '/customers?page=1' }, 'customer');
         const emails = (await utils.expandValues(customers)).map(customer => customer.email);
 
         expect(emails).to.eql([
@@ -119,7 +119,7 @@ describe('Get Property', function () {
           email: 'sjohnson@example.com'
         });
 
-        const customers = queries.getProperty({ customer_url: '/customers?page=1' }, 'customer');
+        const customers = getProperty({ customer_url: '/customers?page=1' }, 'customer');
         const emails = (await utils.expandValues(customers)).map(customer => customer.email);
 
         expect(emails).to.eql([
