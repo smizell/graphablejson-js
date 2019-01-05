@@ -43,14 +43,9 @@ Moveable JSON aims to be a simple solution that allows clients to query the JSON
 
 ## Usage
 
-### `queries.rawPath`
+### `queries.getProperty`
 
-The `queries.rawPath` function takes a query object and returns the desired output.
-
-1. `document` is the object you want to query
-1. `query` is an array of path items
-
-It relies on async generators for returning results. These values can be iterated over and resolved like with any async generator. Using `await` is always required because there may be links in the document to follow.
+The `queries.getProperty` function takes a object and property and returns the values for the property. It will always return a generator, so if a property is a single value or array of values, it will be treated as a generator.
 
 Going back to our example above, our client will not break whether a value is a single value or an array of values.
 
@@ -67,59 +62,15 @@ const document2 = {
 };
 
 // Result will be ['johndoe@example.com']
-const result1 = await queries.rawPath({
-  document: document1,
-  query: ['email']
-});
+const result1 = await queries.getProperty(document1, 'email');
 
 // Result will also be ['johndoe@example.com']
-const result2 = await queries.rawPath({
-  document: document2,
-  query: ['email']
-});
-```
-
-This also works recursively with objects and arrays.
-
-```js
-const { queries } = require('moveablejson')
-
-// Only uses objects
-const document1 = {
-  foo: {
-    baz: {
-      bar: 'biz'
-    }
-  }
-};
-
-// foo is now an array of objects
-const document2 = {
-  foo: [
-    {
-      baz: {
-        bar: 'biz'
-      }
-    }
-  ]
-};
-
-// Result will be 'biz'
-await queries.rawPath({
-  document: document1,
-  query: ['foo', 'baz', 'bar']
-});
-
-// Result will be also be 'biz'
-await queries.rawPath({
-  document: document2,
-  query: ['foo', 'baz', 'bar']
-});
+const result2 = await queries.getProperty(document2, 'email');
 ```
 
 ### Web Aware with RESTful JSON
 
-The `rawPath` query will follow links represented in [RESTful JSON](https://restfuljson.org) if it finds one in place of a property. This allows for API responses to evolve without breaking queries.
+The `getProperty` query will follow links represented in [RESTful JSON](https://restfuljson.org) if it finds one in place of a property. This allows for API responses to evolve without breaking queries.
 
 Let's say the current document we have is an `order` and looks like:
 
@@ -139,31 +90,23 @@ And the customer found at `/customers/4` is:
 }
 ```
 
-The query below will result in the correct `first_name`.
+The query below will result in the response for `/customers/4`.
 
 ```js
 const { queries } = require('moveablejson')
 
-// Result will be ['John']
-const result1 = await queries.rawPath({
-  document: {
-    "order_number": "1234",
-    "customer_url": "/customers/4"
-  },
-  query: ['customer', 'first_name']
-});
+const result1 = await queries.getProperty({
+  "order_number": "1234",
+  "customer_url": "/customers/4"
+}, 'customer');
 
-// Also will return ['John']
-const result2 = await queries.rawPath({
-  document: {
-    "order_number": "1234",
-    "customer": {
-      "first_name": "John",
-      "last_name": "Doe",
-    }
-  },
-  query: ['customer', 'first_name']
-});
+const result1 = await queries.getProperty({
+  "order_number": "1234",
+  "customer": {
+    "first_name": "John",
+    "last_name": "Doe",
+  }
+}, 'customer');
 ```
 
 ### Collections
@@ -189,11 +132,8 @@ const doc1 = {
   ]
 };
 
-// Returns ['1234', '1235']
-await queries.rawPath({
-  document: doc1,
-  query: ['order', 'order_number']
-});
+// Returns all of the order objects found directly in the object
+await queries.getProperty(document1, 'order');
 ```
 
 Below shows the same values changing to use a collection.
@@ -220,7 +160,7 @@ Let's say this is what page 2 might be.
 Here is the collection now where the second page is linked with `next_url`.
 
 ```js
-const doc2 = {
+const document2 = {
   url: 'https://example.com/customer/4538',
   order: {
     url: 'https://example.com/orders?page=1',
@@ -240,17 +180,14 @@ const doc2 = {
   }
 });
 
-// This will return ['1234', '1235', '1236']
-await queries.rawPath({
-  document: doc2,
-  query: ['order', 'order_number']
-});
+// Returns all of the orders found in the collection.
+await queries.getProperty(document2, 'order');
 ```
 
 Combining `$item` with RESTful JSON lets collections provide several links to other values, allowing API designers to reduce collection size so that each item can be requested and cached individually.
 
 ```js
-const doc3 = {
+const document3 = {
   order: {
     url: 'https://example.com/orders?page=1',
     $item_url: [
@@ -261,14 +198,11 @@ const doc3 = {
   }
 };
 
-// This will return ['1234', '1235', '1236'] if the resources are the same as above.
-await queries.rawPath({
-  document: doc3,
-  query: ['order', 'order_number']
-});
+// Follows all of the $item_url values and returns the orders
+await queries.getProperty(document3, 'order');
 ```
 
-### `queries.rawShape`
+### `queries.getShape`
 
 The `rawShape` query allows for defining a structure to find in the API. Where `rawPath` allows for returning a single value, `rawShape` allows for returning many values and on nested objects. It uses `rawPath` for getting values, so links and collections work as defined above.
 
@@ -296,7 +230,7 @@ const query = {
   }
 }
 
-const result = await queries.rawShape({
+const result = await queries.getShape({
   document,
   query
 });

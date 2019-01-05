@@ -1,7 +1,7 @@
 const axios = require('axios');
 const _ = require('lodash');
 
-exports.rawShape = rawShape = async function rawShape({ document, query }) {
+exports.getShape = getShape = async function getShape({ document, query }) {
   const result = {};
 
   for (let property of query.properties || []) {
@@ -11,7 +11,7 @@ exports.rawShape = rawShape = async function rawShape({ document, query }) {
   for (let key in query.related || {}) {
     let valueGen = getProperty(document, key);
     let relatedDoc = (await valueGen.next()).value;
-    result[key] = await rawShape({
+    result[key] = await getShape({
       document: relatedDoc,
       query: query.related[key]
     });
