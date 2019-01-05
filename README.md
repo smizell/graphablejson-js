@@ -43,9 +43,9 @@ Moveable JSON aims to be a simple solution that allows clients to query the JSON
 
 ## Usage
 
-### `queries.raw`
+### `queries.rawPath`
 
-The `queries.raw` function takes a query object and returns the desired output.
+The `queries.rawPath` function takes a query object and returns the desired output.
 
 1. `document` is the object you want to query
 1. `query` is an array of path items
@@ -67,13 +67,13 @@ const document2 = {
 };
 
 // Result will be ['johndoe@example.com']
-const result1 = await queries.raw({
+const result1 = await queries.rawPath({
   document: document1,
   query: ['email']
 });
 
 // Result will also be ['johndoe@example.com']
-const result2 = await queries.raw({
+const result2 = await queries.rawPath({
   document: document2,
   query: ['email']
 });
@@ -105,13 +105,13 @@ const document2 = {
 };
 
 // Result will be 'biz'
-await queries.raw({
+await queries.rawPath({
   document: document1,
   query: ['foo', 'baz', 'bar']
 });
 
 // Result will be also be 'biz'
-await queries.raw({
+await queries.rawPath({
   document: document2,
   query: ['foo', 'baz', 'bar']
 });
@@ -119,7 +119,7 @@ await queries.raw({
 
 ### Web Aware with RESTful JSON
 
-The `raw` query will follow links represented in [RESTful JSON](https://restfuljson.org) if it finds one in place of a property. This allows for API responses to evolve without breaking queries.
+The `rawPath` query will follow links represented in [RESTful JSON](https://restfuljson.org) if it finds one in place of a property. This allows for API responses to evolve without breaking queries.
 
 Let's say the current document we have is an `order` and looks like:
 
@@ -145,7 +145,7 @@ The query below will result in the correct `first_name`.
 const { queries } = require('moveablejson')
 
 // Result will be ['John']
-const result1 = await queries.raw({
+const result1 = await queries.rawPath({
   document: {
     "order_number": "1234",
     "customer_url": "/customers/4"
@@ -154,7 +154,7 @@ const result1 = await queries.raw({
 });
 
 // Also will return ['John']
-const result2 = await queries.raw({
+const result2 = await queries.rawPath({
   document: {
     "order_number": "1234",
     "customer": {
@@ -190,7 +190,7 @@ const doc1 = {
 };
 
 // Returns ['1234', '1235']
-await queries.raw({
+await queries.rawPath({
   document: doc1,
   query: ['order', 'order_number']
 });
@@ -241,7 +241,7 @@ const doc2 = {
 });
 
 // This will return ['1234', '1235', '1236']
-await queries.raw({
+await queries.rawPath({
   document: doc2,
   query: ['order', 'order_number']
 });
@@ -262,14 +262,44 @@ const doc3 = {
 };
 
 // This will return ['1234', '1235', '1236'] if the resources are the same as above.
-await queries.raw({
+await queries.rawPath({
   document: doc3,
   query: ['order', 'order_number']
 });
 ```
 
-## Future Considerations
+### `queries.rawShape`
 
-This is a first pass at this idea. It would be beneficial to explore ways that clients can provide checks to make sure values are the type they expect. For instance, an `email` value needs to be a string that contains an `@` symbol. The current design here does not explore that yet.
+The `rawShape` query allows for defining a structure to find in the API. Where `rawPath` allows for returning a single value, `rawShape` allows for returning many values and on nested objects. It uses `rawPath` for getting values, so links and collections work as defined above.
 
-Also, it would be interesting to explore how linked data can be used with this. JSON-LD does a good job of solving this problem as mentioned above, but its complexity keeps it from working in smaller spaces.  Whether JSON-LD can be used along side this, or if a simple vocabulary can be included within this design can be used is another area to research.
+```js
+const { queries } = require('moveablejson')
+
+// The document we want to query
+const document = {
+  name: 'John Doe',
+  email: 'johndoe@example.com'
+  address: {
+    street: '123 Main St.',
+    city: 'New York',
+    state: 'NY',
+    zip: '10101'
+  }
+};
+
+const query = {
+  properties: ['name', 'email'],
+  related: {
+    address: {
+      properties: ['street', 'city', 'state', 'zip']
+    }
+  }
+}
+
+await queries.rawShape({
+  document,
+  query
+});
+```
+
+Each property will be a generator to allow for one or many values

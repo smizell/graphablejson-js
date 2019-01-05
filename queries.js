@@ -1,13 +1,37 @@
 const axios = require('axios');
 const _ = require('lodash');
 
-exports.raw = raw = async function* raw({ document, query = [] }) {
+exports.rawShape = rawShape = async function rawShape({ document, query }) {
+  const result = {};
+
+  for (let path of query.properties || []) {
+    result[path] = rawPath({ document, query: [path] });
+  }
+
+  for (let key in query.related || {}) {
+    let valueGen = rawPath({ document, query: [key] });
+    let relatedDoc = (await valueGen.next()).value;
+    result[key] = await rawShape({
+      document: relatedDoc,
+      query: query.related[key]
+    });
+  }
+
+  return result;
+}
+
+exports.rawPath = rawPath = async function* rawPath({ document, query = [] }) {
   if (_.isPlainObject(document)) {
     const [key, ...restQuery] = query;
 
+    // There are no more paths to traverse. We can return the object.
+    if (key === undefined) {
+      yield document;
+    }
+
     // Collections are denoted by objects that have an `$item` property.
-    if ('$item' in document) {
-      yield* raw({
+    else if ('$item' in document) {
+      yield* rawPath({
         document: document.$item,
         query
       });
@@ -31,10 +55,10 @@ exports.raw = raw = async function* raw({ document, query = [] }) {
 
     // Handle direct properties
     else if (key in document) {
-      yield* raw({
+      yield* rawPath({
         document: document[key],
         query: restQuery
-      })
+      });
     }
 
     // If a properties isn't found, we can look for a link with the same name.
@@ -45,7 +69,7 @@ exports.raw = raw = async function* raw({ document, query = [] }) {
 
   else if (_.isArray(document)) {
     for (let i in document) {
-      yield* raw({
+      yield* rawPath({
         document: document[i],
         query
       });
@@ -69,7 +93,7 @@ function getLinkName(document, key) {
 async function* getDocumentUrls(document, key) {
   const linkName = getLinkName(document, key);
   const urlProp = document[linkName];
-  yield* raw({ document: urlProp });
+  yield* rawPath({ document: urlProp });
 }
 
 async function* followDocumentLinks(document, key, query) {
@@ -88,7 +112,7 @@ async function* followLinks(urls, query) {
 
 exports.followLink = followLink = async function* followLink(url, query) {
   let resp = await axios.get(url);
-  yield* raw({
+  yield* rawPath({
     document: resp.data,
     query
   });
