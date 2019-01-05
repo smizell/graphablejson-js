@@ -22,14 +22,11 @@ exports.rawShape = rawShape = async function rawShape({ document, query }) {
 
 exports.getProperty = getProperty = async function* getProperty(document, property = []) {
   if (property in document) {
-    const value = document[property];
     yield* handleProperty(document[property]);
   }
 
   else if (hasLink(document, property)) {
-    for await (let item of followDocumentLinks(document, property)) {
-      yield* handleProperty(item);
-    }
+    yield* followDocumentLinks(document, property);
   }
 }
 
@@ -43,9 +40,7 @@ async function* handleProperty(value) {
 
       // Follow paginated links
       if (hasLink(value, 'next')) {
-        for await (let item of followDocumentLinks(value, 'next')) {
-          yield* handleProperty(item);
-        }
+        yield* followDocumentLinks(value, 'next');
       }
     }
 
@@ -58,9 +53,7 @@ async function* handleProperty(value) {
 
       // Follow paginated links
       if (hasLink(value, 'next')) {
-        for await (let item of followDocumentLinks(value, 'next')) {
-          yield* handleProperty(item);
-        }
+        yield* followDocumentLinks(value, 'next');
       }
     }
 
@@ -89,7 +82,7 @@ async function* followDocumentLinks(document, property) {
   const urls = getDocumentUrls(document, property);
   for await (let url of urls) {
     let resp = await axios.get(url);
-    yield resp.data;
+    yield* handleProperty(resp.data);
   }
 }
 
