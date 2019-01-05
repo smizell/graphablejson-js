@@ -1,6 +1,6 @@
 const { expect } = require('chai');
-const { graphQlToShape } = require('..');
 const gql = require('graphql-tag');
+const { graphQlToShape, getWithGraphQl, utils } = require('..');
 
 describe('GraphQL Query', function () {
   context('transform', function () {
@@ -24,4 +24,35 @@ describe('GraphQL Query', function () {
       });
     });
   });
+
+  context('get', function () {
+    it('returns the correct shape', async function () {
+      const document = {
+        name: 'Jane Doe',
+        email: ['jdoe@example.com'],
+        order: [
+          { order_number: '1000' }
+        ]
+      };
+
+      const query = gql`{
+        name
+        email
+        order {
+          order_number
+        }
+      }`;
+
+      const expectedResult = {
+        name: ['Jane Doe'],
+        email: ['jdoe@example.com'],
+        order: [
+          { order_number: ['1000'] }
+        ]
+      };
+
+      const result = await getWithGraphQl(document, query);
+      expect(await utils.expandObject(result)).to.eql(expectedResult);
+    });
+  })
 });

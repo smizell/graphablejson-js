@@ -97,7 +97,7 @@ function isLinkedCollection(document) {
   return hasLink(document, '$item');
 }
 
-exports.graphQlToShape = function (query) {
+exports.graphQlToShape = graphQlToShape = function (query) {
   let result = { properties: [], related: {} };
   (query.definitions).forEach(function (definition) {
     (definition.selectionSet.selections).forEach(function (selection) {
@@ -123,4 +123,9 @@ function handleSelectionSet(selectionSet) {
     }
   });
   return result;
+}
+
+exports.getWithGraphQl = getWithGraphQl = function getWithGraphQl(document, query) {
+  const shape = graphQlToShape(query);
+  return getShape({ document, query: shape })
 }
