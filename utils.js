@@ -14,18 +14,14 @@ exports.expandObject = async function expandObject(obj) {
 
   for (let key in obj) {
     let value = obj[key];
+    result[key] = [];
 
-    if (_.isPlainObject(value)) {
-      result[key] = await expandObject(value);
-    }
-    else {
-      result[key] = [];
-      for await (let item of value) {
-        if (_.isPlainObject(item)) {
-          result[key].push(await expandObject(item));
-        } else {
-          result[key].push(item);
-        }
+    // The value will always be an AsyncGenerator
+    for await (let item of value) {
+      if (_.isPlainObject(item)) {
+        result[key].push(await expandObject(item));
+      } else {
+        result[key].push(item);
       }
     }
   }

@@ -2,44 +2,9 @@
 
 Moveable JSON is an idea for getting rid of the breaking changes we face with JSON and APIs.
 
-**Note**: this README defines how a JavaScript library might work. The library does not exist yet.
-
 ## Overview
 
-Clients break too easily when handling JSON from an API. This is because we strictly define the shape of a JSON and then build clients to rely on the shape. API designers are prevented from evolving the data in ways that allow data models to change shape over time. API designers must plan in advance for properties that may require multiple values later and for values that may change from single values to objects.
-
-Consider this JSON document.
-
-```json
-{
-  "email": "user1@example.com"
-}
-```
-
-What happens when we realize that we need multiple email addresses for this single user? The approach may be to add a plural property of `emails` with a type of array.
-
-```json
-{
-  "email": "user1@example.com",
-  "emails": ["user1@example.com"]
-}
-```
-
-This requires clients to update to use a new type of array and move away from the singular `email` property. The property has to be deprecated or supported forever, which does not allow for the JSON to evolve easily over time. However, what if it wasn't a breaking change to move from a string to an array of strings like below?
-
-```json
-{
-  "email": ["user1@example.com"]
-}
-```
-
-This problem is apparent with our tools as well. JSON Schema—though great at validating the shape of objects—creates a rigid contract between the data and the shape of the date. We also see this in tools like JSON Path that request a specific path in a JSON document. If the shape of the JSON document changes in the slightest, the schema invalidates the document and the path fails.
-
-To work toward solving this, we can think of ways in which the JSON can be built so that shape doesn't matter. In this scenario, objects and arrays can be treated as implementation details and can be used when necessary. Clients then write a query stating relationships that it expects and allow the query to freely move through values, arrays, and objects until that query is satisfied.
-
-This pattern is used in many places already. HTML is a common example many face where clients query the document rather than traversing it directly. Clients look for nodes with specific classes or IDs rather than coupling to structure. JSON-LD is also another example. The data is created as a graph and can be expanded when needed. However, there are cases where JSON-LD is too complex for people to use.
-
-Moveable JSON aims to be a simple solution that allows clients to query the JSON regardless of the structure. It allows JSON to move in structure while retaining the relationship of the data. If used correctly, the only breaking changes are when the value types of strings, numbers, or booleans change to a different type of string, number, or boolean. Changing to arrays or objects will not break clients.
+Moveable JSON starts with the idea that clients shouldn't care if there are one ore many values for a property. This allows properties to evolve from a single value like a string to many values like an array of strings. It then builds upon this idea by allowing values to be links. This lets an API change a property from one included in a response to one that is linked. The client shouldn't care whether those values are included or linked.
 
 ## Usage
 
@@ -100,7 +65,8 @@ const result1 = await queries.getProperty({
   "customer_url": "/customers/4"
 }, 'customer');
 
-const result1 = await queries.getProperty({
+// This will be the same value as above, just without the API request
+const result2 = await queries.getProperty({
   "order_number": "1234",
   "customer": {
     "first_name": "John",
@@ -236,4 +202,4 @@ const result = await queries.getShape({
 });
 ```
 
-Each property will be a generator to allow for one or many values.
+Each property will be a generator to allow for one or many values. This allows for getting properties throughout a document and even throughout an API.

@@ -6,19 +6,23 @@ exports.getShape = getShape = async function getShape({ document, query }) {
   for (let property of query.properties || []) {
     result[property] = getProperty(document, property);
   }
-  for (let relatedProperty in query.related || {}) {
-    result[relatedProperty] = [];
-    for await (let related of getProperty(document, relatedProperty)) {
-      result[relatedProperty].push(await getShape({
-        document: related,
-        query: query.related[relatedProperty]
-      }));
-    }
+  for (let relatedName in query.related || {}) {
+    let items = getProperty(document, relatedName);
+    result[relatedName] = getRelated(items, query.related[relatedName]);
   }
   return result;
 }
 
-exports.getProperty = getProperty = async function* getProperty(document, property = []) {
+exports.getRelated = getRelated = async function* getRelated(items, query) {
+  for await (let item of items) {
+    yield await getShape({
+      document: item,
+      query
+    });
+  }
+}
+
+exports.getProperty = getProperty = async function* getProperty(document, property) {
   if (property in document) {
     yield* handleProperty(document[property]);
   }
