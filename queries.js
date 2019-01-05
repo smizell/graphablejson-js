@@ -3,22 +3,18 @@ const _ = require('lodash');
 
 exports.getShape = getShape = async function getShape({ document, query }) {
   const result = {};
-
   for (let property of query.properties || []) {
     result[property] = getProperty(document, property);
   }
-
-  for (let key in query.related || {}) {
-    result[key] = [];
-
-    for await (let related of getProperty(document, key)) {
-      result[key].push(await getShape({
+  for (let relatedProperty in query.related || {}) {
+    result[relatedProperty] = [];
+    for await (let related of getProperty(document, relatedProperty)) {
+      result[relatedProperty].push(await getShape({
         document: related,
-        query: query.related[key]
+        query: query.related[relatedProperty]
       }));
     }
   }
-
   return result;
 }
 
@@ -26,7 +22,6 @@ exports.getProperty = getProperty = async function* getProperty(document, proper
   if (property in document) {
     yield* handleProperty(document[property]);
   }
-
   else if (hasLink(document, property)) {
     yield* followDocumentLinks(document, property);
   }
@@ -34,46 +29,34 @@ exports.getProperty = getProperty = async function* getProperty(document, proper
 
 async function* handleProperty(value) {
   if (_.isPlainObject(value)) {
-    // Collections are denoted by objects that have an `$item` property.
     if (isIncludedCollection(value)) {
       for (let item of value.$item) {
         yield item;
       }
-
-      // Follow paginated links
       if (hasLink(value, 'next')) {
         yield* followDocumentLinks(value, 'next');
       }
     }
-
-    // Like normal properties, the `$item` for collection can be a link or an
-    // array of links.
     else if (isLinkedCollection(value)) {
       for await (let item of followDocumentLinks(value, '$item')) {
-        yield* handleProperty(item);
+        yield item;
       }
-
-      // Follow paginated links
       if (hasLink(value, 'next')) {
         yield* followDocumentLinks(value, 'next');
       }
     }
-
     else {
       yield value;
     }
   }
-
   else if (_.isArray(value)) {
     for (let item of value) {
       yield item;
     }
   }
-
   else {
     yield value;
   }
-
 }
 
 function hasLink(document, key) {
@@ -84,13 +67,14 @@ async function* followDocumentLinks(document, property) {
   const urls = getDocumentUrls(document, property);
   for await (let url of urls) {
     let resp = await axios.get(url);
+    // Using handleProperty allows the value to be a collection
     yield* handleProperty(resp.data);
   }
 }
 
-// This uses getProperty so we can use one or many values
 async function* getDocumentUrls(document, property) {
   const linkName = getLinkName(document, property);
+  // getProperty allows for one or more URLs
   yield* getProperty(document, linkName);
 }
 
