@@ -98,25 +98,19 @@ function isLinkedCollection(document) {
 }
 
 exports.graphQlToShape = graphQlToShape = function (query) {
-  let result = { properties: [], related: {} };
-  (query.definitions).forEach(function (definition) {
-    (definition.selectionSet.selections).forEach(function (selection) {
-      if (selection.selectionSet) {
-        result.related[selection.name.value] = handleSelectionSet(selection.selectionSet);
-      }
-      else {
-        result.properties.push(selection.name.value);
-      }
-    });
+  let result;
+  // Only dealing with one definition at the moment
+  (query.definitions || []).forEach(function (definition) {
+    result = handleSelections(definition.selectionSet.selections);
   });
   return result;
 }
 
-function handleSelectionSet(selectionSet) {
+function handleSelections(selections) {
   let result = { properties: [], related: {} };
-  (selectionSet.selections).forEach(function (selection) {
+  (selections || []).forEach(function (selection) {
     if (selection.selectionSet) {
-      result.related[selection.name.value] = handleSelectionSet(selection.selectionSet);
+      result.related[selection.name.value] = handleSelections(selection.selectionSet.selections);
     }
     else {
       result.properties.push(selection.name.value);

@@ -201,3 +201,30 @@ const result = await getShape({
 ```
 
 Each property will be a generator to allow for one or many values. This allows for getting properties throughout a document and even throughout an API.
+
+### `getWithGraphQl`
+
+This takes a GraphQL AST and converts it into the structure for `getShape`. Support is very basic at the moment, however, you can write simple queries and get the results while evolving the API. It requires that you have `graphql-js` and something like `graphql-tag` to be able to pass in an AST.
+
+```js
+const document = {
+  customer_number: "8000",
+  order: [
+    {
+      url: "https://moveablejsonapi.glitch.me/orders/1000",
+      order_number: "1000",
+      total: 150,
+      unit: "USD"
+     }
+  ]
+}
+const query = gql`{
+  customer_number
+  order {
+    order_number
+    total
+  }
+}`;
+
+const result = await getWithGraphQl(example, query);
+```

@@ -7,7 +7,6 @@ const apiUrl = 'https://moveablejsonapi.glitch.me';
 const exampleId = process.argv[2] || 'example1';
 
 async function api() {
-  console.log(exampleId)
   const api = await axios.get(apiUrl);
   const example = api.data[exampleId];
   const value = await getShape({
