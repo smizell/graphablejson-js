@@ -4,12 +4,12 @@ const _ = require('lodash');
 exports.rawShape = rawShape = async function rawShape({ document, query }) {
   const result = {};
 
-  for (let path of query.properties || []) {
-    result[path] = rawPath({ document, query: [path] });
+  for (let property of query.properties || []) {
+    result[property] = getProperty(document, property);
   }
 
   for (let key in query.related || {}) {
-    let valueGen = rawPath({ document, query: [key] });
+    let valueGen = getProperty(document, key);
     let relatedDoc = (await valueGen.next()).value;
     result[key] = await rawShape({
       document: relatedDoc,
@@ -20,100 +20,93 @@ exports.rawShape = rawShape = async function rawShape({ document, query }) {
   return result;
 }
 
-exports.rawPath = rawPath = async function* rawPath({ document, query = [] }) {
-  if (_.isPlainObject(document)) {
-    const [key, ...restQuery] = query;
+exports.getProperty = getProperty = async function* getProperty(document, property = []) {
+  if (property in document) {
+    const value = document[property];
+    yield* handleProperty(document[property]);
+  }
 
-    // There are no more paths to traverse. We can return the object.
-    if (key === undefined) {
-      yield document;
+  else if (hasLink(document, property)) {
+    for await (let item of followDocumentLinks(document, property)) {
+      yield* handleProperty(item);
     }
+  }
+}
 
+async function* handleProperty(value) {
+  if (_.isPlainObject(value)) {
     // Collections are denoted by objects that have an `$item` property.
-    else if ('$item' in document) {
-      yield* rawPath({
-        document: document.$item,
-        query
-      });
+    if (isIncludedCollection(value)) {
+      for (let item of value.$item) {
+        yield item;
+      }
 
       // Follow paginated links
-      if (hasLink(document, 'next')) {
-        yield* followDocumentLinks(document, 'next', query);
+      if (hasLink(value, 'next')) {
+        for await (let item of followDocumentLinks(value, 'next')) {
+          yield* handleProperty(item);
+        }
       }
     }
 
     // Like normal properties, the `$item` for collection can be a link or an
     // array of links.
-    else if (hasLink(document, '$item')) {
-      yield* followDocumentLinks(document, '$item', query);
+    else if (isLinkedCollection(value)) {
+      for await (let item of followDocumentLinks(value, '$item')) {
+        yield* handleProperty(item);
+      }
 
       // Follow paginated links
-      if (hasLink(document, 'next')) {
-        yield* followDocumentLinks(document, 'next', query);
+      if (hasLink(value, 'next')) {
+        for await (let item of followDocumentLinks(value, 'next')) {
+          yield* handleProperty(item);
+        }
       }
     }
 
-    // Handle direct properties
-    else if (key in document) {
-      yield* rawPath({
-        document: document[key],
-        query: restQuery
-      });
-    }
-
-    // If a properties isn't found, we can look for a link with the same name.
-    else if (hasLink(document, key)) {
-      yield* followDocumentLinks(document, key, restQuery);
+    else {
+      yield value;
     }
   }
 
-  else if (_.isArray(document)) {
-    for (let i in document) {
-      yield* rawPath({
-        document: document[i],
-        query
-      });
+  else if (_.isArray(value)) {
+    for (let item of value) {
+      yield item;
     }
   }
 
-  // TODO: only yield on strings, numbers, and booleans
   else {
-    yield document;
+    yield value;
   }
+
 }
 
 function hasLink(document, key) {
   return `${key}_url` in document || `${key}Url` in document;
 }
 
+async function* followDocumentLinks(document, property) {
+  const urls = getDocumentUrls(document, property);
+  for await (let url of urls) {
+    let resp = await axios.get(url);
+    yield resp.data;
+  }
+}
+
+// This uses getProperty so we can use one or many values
+async function* getDocumentUrls(document, property) {
+  const linkName = getLinkName(document, property);
+  yield* getProperty(document, linkName);
+}
+
 function getLinkName(document, key) {
   return `${key}_url` in document ? `${key}_url` : `${key}Url`;
 }
 
-async function* getDocumentUrls(document, key) {
-  const linkName = getLinkName(document, key);
-  const urlProp = document[linkName];
-  yield* rawPath({ document: urlProp });
+function isIncludedCollection(document) {
+  return '$item' in document;
 }
 
-async function* followDocumentLinks(document, key, query) {
-  const urls = getDocumentUrls(document, key);
-  yield* followLinks(urls, query);
-}
-
-// The urls argument should be an AsyncGenerator so that we can handle many URLs
-// at once. There may be one or many URLs in a document, so we treat it that
-// way.
-async function* followLinks(urls, query) {
-  for await (let url of urls) {
-    yield* followLink(url, query);
-  }
-}
-
-exports.followLink = followLink = async function* followLink(url, query) {
-  let resp = await axios.get(url);
-  yield* rawPath({
-    document: resp.data,
-    query
-  });
+function isLinkedCollection(document) {
+  return hasLink(document, '$item');
 }
