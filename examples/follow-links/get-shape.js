@@ -1,4 +1,4 @@
-const { queries, utils } = require('.');
+const { queries, utils } = require('../..');
 const axios = require('axios');
 const util = require('util');
 const apiUrl = 'https://moveablejsonapi.glitch.me';
