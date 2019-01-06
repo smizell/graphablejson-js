@@ -4,7 +4,7 @@ const _ = require('lodash');
 
 exports.utils = require('./utils');
 
-exports.getShape = getShape = async function getShape({ document, query }) {
+exports.rawQuery = rawQuery = function rawQuery(document, query) {
   const result = {};
   for (let property of query.properties || []) {
     result[property] = getProperty(document, property);
@@ -18,10 +18,7 @@ exports.getShape = getShape = async function getShape({ document, query }) {
 
 exports.getRelated = getRelated = async function* getRelated(items, query) {
   for await (let item of items) {
-    yield await getShape({
-      document: item,
-      query
-    });
+    yield rawQuery(item, query);
   }
 }
 
@@ -97,7 +94,7 @@ function isLinkedCollection(document) {
   return hasLink(document, '$item');
 }
 
-exports.graphQlToShape = graphQlToShape = function (query) {
+exports.transformGql = transformGql = function (query) {
   let result;
   // Only dealing with one definition at the moment
   (query.definitions || []).forEach(function (definition) {
@@ -119,7 +116,6 @@ function handleSelections(selections) {
   return result;
 }
 
-exports.getWithGraphQl = getWithGraphQl = function getWithGraphQl(document, query) {
-  const shape = graphQlToShape(query);
-  return getShape({ document, query: shape })
+exports.gqlQuery = gqlQuery = function gqlQuery(document, query) {
+  return rawQuery(document, transformGql(query))
 }

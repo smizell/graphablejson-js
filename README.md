@@ -1,10 +1,10 @@
 # Moveable JSON
 
-Moveable JSON is an idea for getting rid of the breaking changes we face with JSON and APIs.
+Moveable JSON is an idea for getting rid of the breaking changes we face with JSON and APIs. It allows client developers to specify a shape of data they expect. The library will then fetch the data from the API by looking for properties, following links if defined, and following pagination. GraphQL can also be used a syntax for specifying structure.
 
 ## Overview
 
-Moveable JSON starts with the idea that clients shouldn't care if there are one ore many values for a property. This allows properties to evolve from a single value like a string to many values like an array of strings. It then builds upon this idea by allowing values to be links. This lets an API change a property from one included in a response to one that is linked. The client shouldn't care whether those values are included or linked.
+Moveable JSON starts with the idea that clients shouldn't care if there are one ore many values for a property and whether the value is included in the response or linked. This allows properties to evolve from a single value like a string to many values like an array of strings. Beyond that, values can evolve to be their own resources in an API and be linked where they were once included. The client shouldn't care whether those values are included or linked and whether there are one or many.
 
 ## Usage
 
@@ -166,12 +166,12 @@ const document3 = {
 await getProperty(document3, 'order');
 ```
 
-### `getShape`
+### `rawQuery`
 
-The `getShape` query allows for defining a structure to find in the API. Where `getProperty` allows for returning a single value, `getShape` allows for returning many values and on nested objects. It uses `getProperty` for getting values, so links and collections work as defined above.
+The `rawQuery` query allows for defining a structure to find in the API. Where `getProperty` allows for returning a single value, `rawQuery` allows for returning many values and on nested objects. It uses `getProperty` for getting values, so links and collections work as defined above.
 
 ```js
-const { getShape } = require('moveablejson')
+const { rawQuery } = require('moveablejson')
 
 // The document we want to query
 const document = {
@@ -194,17 +194,14 @@ const query = {
   }
 }
 
-const result = await getShape({
-  document,
-  query
-});
+const result = rawQuery(document, query);
 ```
 
 Each property will be a generator to allow for one or many values. This allows for getting properties throughout a document and even throughout an API.
 
-### `getWithGraphQl`
+### `gqlQuery`
 
-This takes a GraphQL AST and converts it into the structure for `getShape`. Support is very basic at the moment, however, you can write simple queries and get the results while evolving the API. It requires that you have `graphql-js` and something like `graphql-tag` to be able to pass in an AST.
+This takes a GraphQL AST and converts it into the structure for `rawQuery`. Support is very basic at the moment, however, you can write simple queries and get the results while evolving the API. It requires that you have `graphql-js` and something like `graphql-tag` to be able to pass in an AST.
 
 ```js
 const document = {
@@ -217,7 +214,8 @@ const document = {
       unit: "USD"
      }
   ]
-}
+};
+
 const query = gql`{
   customer_number
   order {
@@ -226,5 +224,5 @@ const query = gql`{
   }
 }`;
 
-const result = await getWithGraphQl(example, query);
+const result = await gqlQuery(document, query);
 ```

@@ -15,8 +15,7 @@ This example shows all of these scenarios through a [sample API](https://moveabl
 
 1. Clone this repository with `git clone https://github.com/smizell/moveablejson.git`
 1. Install the code with `npm install`
-1. Navigate to this directory `cd moveablejson/examples/follow-links`
-1. Run the example `node get-shape.js example1` or `node get-property.js example1`
+1. Run the example `node examples/graphql-example.js example1` or `node examples/get-property.js example1`
 1. Run other examples listed above
 
-If you look at [get-shape.js](get-shape.js) and [get-property](get-property.js), you'll see the query never changes, yet the output is the same for each query. This allows the structure to evolve without breaking clients.
+If you look at [graphql-example.js](graphql-example.js) and [get-property](get-property.js), you'll see the query never changes, yet the output is the same for each query. This allows the structure to evolve without breaking clients.

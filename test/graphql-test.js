@@ -1,6 +1,6 @@
 const { expect } = require('chai');
 const gql = require('graphql-tag');
-const { graphQlToShape, getWithGraphQl, utils } = require('..');
+const { transformGql, gqlQuery, utils } = require('..');
 
 describe('GraphQL Query', function () {
   context('transform', function () {
@@ -12,7 +12,7 @@ describe('GraphQL Query', function () {
           lastName
         }
       }`;
-      const shape = graphQlToShape(query);
+      const shape = transformGql(query);
       expect(shape).to.eql({
         properties: ['version'],
         related: {
@@ -51,7 +51,7 @@ describe('GraphQL Query', function () {
         ]
       };
 
-      const result = await getWithGraphQl(document, query);
+      const result = gqlQuery(document, query);
       expect(await utils.expandObject(result)).to.eql(expectedResult);
     });
   })

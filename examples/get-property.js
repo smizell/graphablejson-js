@@ -1,4 +1,4 @@
-const { getProperty, utils } = require('../..');
+const { getProperty, utils } = require('..');
 const axios = require('axios');
 const apiUrl = 'https://moveablejsonapi.glitch.me';
 
