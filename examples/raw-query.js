@@ -1,7 +1,7 @@
 const { rawQuery, utils } = require('..');
 const axios = require('axios');
 const util = require('util');
-const apiUrl = 'https://moveablejsonapi.glitch.me';
+const apiUrl = 'https://graphablejsonapi.glitch.me';
 
 // Allow for changing examples through command line
 const exampleId = process.argv[2] || 'example1';
