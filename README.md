@@ -50,7 +50,7 @@ It requires you to have `graphql-js` and something like `graphql-tag` to be able
 
 ```js
 // Expecting the following result for the URL:
-// https://graphablejsonapi.glitch.me/orders
+// https://graphablejsonapi.glitch.me/examples/example2
 //
 // {
 //   customer_number: "8000",
