@@ -38,6 +38,8 @@ Run the following to install the library:
 npm install graphablejson
 ```
 
+There is an example API found `https://graphablejsonapi.glitch.me/orders/1000`. You can also view the [GraphQL example](./examples/graphql-example.js) directory to see how this library can be used.
+
 ## Usage
 
 ### `gqlQuery`
@@ -62,48 +64,29 @@ It requires you to have `graphql-js` and something like `graphql-tag` to be able
 //   ]
 // };
 
+const gql = require('graphql-tag');
 const { gqlQuery, utils } = require('graphablejson');
+
 const result = await gqlQuery('https://graphablejsonapi.glitch.me/orders/1000', gql`{
-  customer_number
-  order {
-    order_number
-    total
-  }
+  order_number
+  total
 }`);
+
 // expandObject will follow links until the object is full expanded
-console.log(await utils.expandObject(await result))
+console.log(await utils.expandObject(await result));
 ```
 
 This makes use of all the functionality listed below. It will follow links and paginated collections.
 
 ### `getProperty`
 
-The `queries.getProperty` function takes a object and property and returns the values for the property. It will always return a generator, so if a property is a single value or array of values, it will be treated as a generator.
+## Technical Details
 
-Going back to our example above, our client will not break whether a value is a single value or an array of values.
-
-```js
-const { getProperty } = require('graphablejson')
-
-// The document we want to query
-const document1 = {
-  email: 'johndoe@example.com'
-};
-
-const document2 = {
-  email: ['johndoe@example.com']
-};
-
-// Result will be ['johndoe@example.com']
-const result1 = await getProperty(document1, 'email');
-
-// Result will also be ['johndoe@example.com']
-const result2 = await getProperty(document2, 'email');
-```
+This section gives a look into how the library handles responses.
 
 ### Web Aware with RESTful JSON
 
-The `getProperty` query will follow links represented in [RESTful JSON](https://restfuljson.org) if it finds one in place of a property. This allows for API responses to evolve without breaking queries.
+The library will follow links represented in [RESTful JSON](https://restfuljson.org) if it finds one in place of a property. This allows for API responses to evolve without breaking queries.
 
 Let's say the current document we have is an `order` and looks like:
 
@@ -123,24 +106,19 @@ And the customer found at `/customers/4` is:
 }
 ```
 
-The query below will result in the response for `/customers/4`.
+The query below will request the data and resolve the link. If the data were included in the first response, it would return it, but since it's linked, it will follow the link to get the data.
 
 ```js
-const { getProperty } = require('graphablejson')
+const { gqlQuery } = require('graphablejson');
+const gql = require('graphql-tag');
 
-const result1 = await getProperty({
-  "order_number": "1234",
-  "customer_url": "/customers/4"
-}, 'customer');
-
-// This will be the same value as above, just without the API request
-const result2 = await getProperty({
-  "order_number": "1234",
-  "customer": {
-    "first_name": "John",
-    "last_name": "Doe",
+const result = gqlQuery('https://example.com', gql`
+  order_number
+  customer {
+    first_name
+    last_name
   }
-}, 'customer');
+`);
 ```
 
 ### Collections
@@ -148,24 +126,30 @@ const result2 = await getProperty({
 Additionally, APIs may need to return a partial set of items and let the client request more if necessary by way of pagination. A collection object is used to make this possible. It wraps values with an `$item` property so the JSON can move from values, to arrays, to paginated arrays.
 
 ```js
-const doc1 = {
-  url: 'https://example.com/customer/4538',
-  order: [
-    {
-      url: 'https://example.com/order/1234',
-      order_number: '1234',
-      total_amount: '$100.00'
-    },
-    {
-      url: 'https://example.com/order/1235',
-      order_number: '1235',
-      total_amount: '$120.00'
-    }
-  ]
-};
+// We'll say the following response is found at http://example.com
+// {
+//   url: 'https://example.com/customer/4538',
+//   order: [
+//     {
+//       url: 'https://example.com/order/1234',
+//       order_number: '1234',
+//       total_amount: '$100.00'
+//     },
+//     {
+//       url: 'https://example.com/order/1235',
+//       order_number: '1235',
+//       total_amount: '$120.00'
+//     }
+//   ]
+// };
 
 // Returns all of the order objects found directly in the object
-await getProperty(document1, 'order');
+const result = gqlQuery('https://example.com', gql`
+  order {
+    order_number
+    total_amount
+  }
+`);
 ```
 
 Below shows the same values changing to use a collection.
@@ -173,7 +157,37 @@ Below shows the same values changing to use a collection.
 A collection is denoted by the `$item` property. Remember that values can be arrays or single values, so $item can be either an
 array of items or a single item.
 
-Let's say this is what page 2 might be.
+Here is the customer again, this time with a linked collection of orders.
+
+```js
+{
+  "url": 'https://example.com/customer/4538',
+  "order_url": "http://example.com/orders"
+}
+```
+
+Here is the first page for the orders.
+
+```js
+{
+  "url": 'https://example.com/orders?page=1',
+  "$item": [
+    {
+      "url": 'https://example.com/order/1234',
+      "order_number": '1234',
+      "total_amount": '$100.00'
+    },
+    {
+      "url": 'https://example.com/order/1235',
+      "order_number": '1235',
+      "total_amount": '$120.00'
+    }
+  ],
+  "next_url": 'https://example.com/orders?page=2'
+}
+```
+
+And the second page of orders.
 
 ```js
 {
@@ -189,82 +203,21 @@ Let's say this is what page 2 might be.
 }
 ```
 
-Here is the collection now where the second page is linked with `next_url`.
+The same query listed above will work for this. It will follow `next_url` links and return each item found in `$item`.
+
+This however is not always the best method as including the items in the collection means we cannot cache individual items. To help, we can use links to each item and let the Graphable JSON client resolve the links. This makes use of the same pattern of linking to values by appending a `_url` to the `$item` property and making each item a separate link.
 
 ```js
-const document2 = {
-  url: 'https://example.com/customer/4538',
-  order: {
-    url: 'https://example.com/orders?page=1',
-    $item: [
-      {
-        url: 'https://example.com/order/1234',
-        order_number: '1234',
-        total_amount: '$100.00'
-      },
-      {
-        url: 'https://example.com/order/1235',
-        order_number: '1235',
-        total_amount: '$120.00'
-      }
-    ],
-    next_url: 'https://example.com/orders?page=2'
-  }
-});
-
-// Returns all of the orders found in the collection.
-await getProperty(document2, 'order');
-```
-
-Combining `$item` with RESTful JSON lets collections provide several links to other values, allowing API designers to reduce collection size so that each item can be requested and cached individually.
-
-```js
-const document3 = {
-  order: {
-    url: 'https://example.com/orders?page=1',
-    $item_url: [
+{
+  "order": {
+    "url": 'https://example.com/orders?page=1',
+    "$item_url": [
       'https://example.com/orders/1234',
       'https://example.com/orders/1235'
     ],
-    next_url: 'https://example.com/orders?page=2'
-  }
-};
-
-// Follows all of the $item_url values and returns the orders
-await getProperty(document3, 'order');
-```
-
-### `rawQuery`
-
-The `rawQuery` query allows for defining a structure to find in the API. Where `getProperty` allows for returning a single value, `rawQuery` allows for returning many values and on nested objects. It uses `getProperty` for getting values, so links and collections work as defined above.
-
-```js
-const { rawQuery } = require('graphablejson')
-
-// The document we want to query
-const document = {
-  name: 'John Doe',
-  email: 'johndoe@example.com'
-  address: {
-    street: '123 Main St.',
-    city: 'New York',
-    state: 'NY',
-    zip: '10101'
-  }
-};
-
-const query = {
-  properties: ['name', 'email'],
-  related: {
-    address: {
-      properties: ['street', 'city', 'state', 'zip']
-    }
+    "next_url": 'https://example.com/orders?page=2'
   }
 }
-
-const result = rawQuery(document, query);
 ```
-
-Each property will be a generator to allow for one or many values. This allows for getting properties throughout a document and even throughout an API.
 
 [RESTfulJSON]: https://restfuljson.org/
