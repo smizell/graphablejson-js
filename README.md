@@ -1,16 +1,46 @@
 # Graphable JSON
 
-Graphable JSON is an idea for using GraphQL with a REST API getting rid of the breaking changes we face with JSON and APIs. It allows client developers to specify a shape of data they expect. The library will then fetch the data from the API by looking for properties, following links if defined, and following pagination.
+Graphable JSON is an idea for using GraphQL with a REST API. GraphQL allows client developers to define only what they need and the API responds with the requested data. Graphable JSON is similar in that it allows client developers to specify the shape of data. It differs in that it will provide the requested data by following links and paginated collections to get the data.
 
-## Overview
+Though this does not solve the problem of overfetching, it does let client developers forget about resources, URLs, and HTTP requests—they ask for what they need and that's all. For API developers, it lets them evolve their API without fear of breaking the client.
 
-Graphable JSON starts with the idea that clients shouldn't care if there are one ore many values for a property and whether the value is included in the response or linked. This allows properties to evolve from a single value like a string to many values like an array of strings. Beyond that, values can evolve to be their own resources in an API and be linked where they were once included. The client shouldn't care whether those values are included or linked and whether there are one or many.
+## How it works
+
+When a URL and query are given to the Graphable JSON client, the library will request the URL and look for the properties and related objects directly included that response. If they are there, it returns the values it found. If the properties are links instead of values by way [RESTful JSON][RESTfulJSON], it will follow those links and provide the response values. If the links are for [collections](#Collections), it will follow `next` links and return all of the items from the collections.
+
+This library makes use of asynchronous generators. This means the library will not follow all of the links it finds but rather follow them only when the client asks for the next item. The data will be lazily resolved so only the used data will be requested. This allows API developers to convert values into links to help clients make use of caching and reduce response sizes. The smaller the responses, the better.
+
+Lastly, Graphable JSON allows for thinking about relationships rather than JSON structures. For example, a customer may have an `email` relationship, and this could mean there are no emails, one email, or many emails. The Graphable JSON library will treat the following examples of a customer the same.
+
+```js
+// No email
+{}
+
+// Email is null
+{ "email": null }
+
+// One email
+{ "email": "jdoe@example.com" }
+
+// Multiple emails
+{ "email": [ "jdoe@example.com", "jdoe2@example.com" ] }
+```
+
+This works because of the use of generators. When it's undefined or `null`, the library will never yield a value for `email`. When there is one, it will yield one `email`. And when there is an array, it will yield each one individually.
 
 ## Usage
 
+Run the following to install the library:
+
+```sh
+npm install graphablejson
+```
+
 ### `gqlQuery`
 
-This takes a GraphQL AST and converts it into the structure for `rawQuery`. Support is very basic at the moment, however, you can write simple queries and get the results while evolving the API. It requires that you have `graphql-js` and something like `graphql-tag` to be able to pass in an AST.
+The `gqlQuery` function is takes a URL and query and retrieves the requested data. Support is limited at this point. It takes a URL and a GraphQL AST and returns an object with async generators. This allows the client to lazily load the data from the API instead of requested all of the URLs at once.
+
+It requires you to have `graphql-js` and something like `graphql-tag` to be able to pass in an AST.
 
 ```js
 // Expecting the following result for the URL:
@@ -28,6 +58,7 @@ This takes a GraphQL AST and converts it into the structure for `rawQuery`. Supp
 //   ]
 // };
 
+const { gqlQuery, utils } = require('graphablejson');
 const result = await gqlQuery('https://graphablejsonapi.glitch.me/orders/1000', gql`{
   customer_number
   order {
@@ -35,6 +66,8 @@ const result = await gqlQuery('https://graphablejsonapi.glitch.me/orders/1000', 
     total
   }
 }`);
+// expandObject will follow links until the object is full expanded
+console.log(await utils.expandObject(await result))
 ```
 
 This makes use of all the functionality listed below. It will follow links and paginated collections.
@@ -230,3 +263,4 @@ const result = rawQuery(document, query);
 
 Each property will be a generator to allow for one or many values. This allows for getting properties throughout a document and even throughout an API.
 
+[RESTfulJSON]: https://restfuljson.org/
