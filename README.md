@@ -1,12 +1,43 @@
-# Moveable JSON
+# Graphable JSON
 
-Moveable JSON is an idea for getting rid of the breaking changes we face with JSON and APIs. It allows client developers to specify a shape of data they expect. The library will then fetch the data from the API by looking for properties, following links if defined, and following pagination. GraphQL can also be used a syntax for specifying structure.
+Graphable JSON is an idea for using GraphQL with a REST API getting rid of the breaking changes we face with JSON and APIs. It allows client developers to specify a shape of data they expect. The library will then fetch the data from the API by looking for properties, following links if defined, and following pagination.
 
 ## Overview
 
-Moveable JSON starts with the idea that clients shouldn't care if there are one ore many values for a property and whether the value is included in the response or linked. This allows properties to evolve from a single value like a string to many values like an array of strings. Beyond that, values can evolve to be their own resources in an API and be linked where they were once included. The client shouldn't care whether those values are included or linked and whether there are one or many.
+Graphable JSON starts with the idea that clients shouldn't care if there are one ore many values for a property and whether the value is included in the response or linked. This allows properties to evolve from a single value like a string to many values like an array of strings. Beyond that, values can evolve to be their own resources in an API and be linked where they were once included. The client shouldn't care whether those values are included or linked and whether there are one or many.
 
 ## Usage
+
+### `gqlQuery`
+
+This takes a GraphQL AST and converts it into the structure for `rawQuery`. Support is very basic at the moment, however, you can write simple queries and get the results while evolving the API. It requires that you have `graphql-js` and something like `graphql-tag` to be able to pass in an AST.
+
+```js
+// Expecting the following result for the URL:
+// https://graphablejsonapi.glitch.me/orders/1000
+//
+// {
+//   customer_number: "8000",
+//   order: [
+//     {
+//       url: "https://graphablejsonapi.glitch.me/orders/1000",
+//       order_number: "1000",
+//       total: 150,
+//       unit: "USD"
+//      }
+//   ]
+// };
+
+const result = await gqlQuery('https://graphablejsonapi.glitch.me/orders/1000', gql`{
+  customer_number
+  order {
+    order_number
+    total
+  }
+}`);
+```
+
+This makes use of all the functionality listed below. It will follow links and paginated collections.
 
 ### `getProperty`
 
@@ -15,7 +46,7 @@ The `queries.getProperty` function takes a object and property and returns the v
 Going back to our example above, our client will not break whether a value is a single value or an array of values.
 
 ```js
-const { getProperty } = require('moveablejson')
+const { getProperty } = require('graphablejson')
 
 // The document we want to query
 const document1 = {
@@ -58,7 +89,7 @@ And the customer found at `/customers/4` is:
 The query below will result in the response for `/customers/4`.
 
 ```js
-const { getProperty } = require('moveablejson')
+const { getProperty } = require('graphablejson')
 
 const result1 = await getProperty({
   "order_number": "1234",
@@ -171,7 +202,7 @@ await getProperty(document3, 'order');
 The `rawQuery` query allows for defining a structure to find in the API. Where `getProperty` allows for returning a single value, `rawQuery` allows for returning many values and on nested objects. It uses `getProperty` for getting values, so links and collections work as defined above.
 
 ```js
-const { rawQuery } = require('moveablejson')
+const { rawQuery } = require('graphablejson')
 
 // The document we want to query
 const document = {
@@ -199,30 +230,3 @@ const result = rawQuery(document, query);
 
 Each property will be a generator to allow for one or many values. This allows for getting properties throughout a document and even throughout an API.
 
-### `gqlQuery`
-
-This takes a GraphQL AST and converts it into the structure for `rawQuery`. Support is very basic at the moment, however, you can write simple queries and get the results while evolving the API. It requires that you have `graphql-js` and something like `graphql-tag` to be able to pass in an AST.
-
-```js
-const document = {
-  customer_number: "8000",
-  order: [
-    {
-      url: "https://moveablejsonapi.glitch.me/orders/1000",
-      order_number: "1000",
-      total: 150,
-      unit: "USD"
-     }
-  ]
-};
-
-const query = gql`{
-  customer_number
-  order {
-    order_number
-    total
-  }
-}`;
-
-const result = await gqlQuery(document, query);
-```

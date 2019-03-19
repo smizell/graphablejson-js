@@ -1,14 +1,14 @@
 {
-  "name": "moveablejson",
+  "name": "graphablejson",
   "version": "0.17.0",
-  "description": "Get rid of the breaking changes we face with JSON in APIs",
+  "description": "Use GraphQL and REST together",
   "main": "index.js",
   "scripts": {
     "test": "mocha"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/smizell/moveablejson.git"
+    "url": "git+https://github.com/smizell/graphablejson.git"
   },
   "keywords": [
     "api",
@@ -17,9 +17,9 @@
   "author": "Stephen Mizell",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/smizell/moveablejson/issues"
+    "url": "https://github.com/smizell/graphablejson/issues"
   },
-  "homepage": "https://github.com/smizell/moveablejson#readme",
+  "homepage": "https://github.com/smizell/graphablejson#readme",
   "devDependencies": {
     "axios-mock-adapter": "^1.15.0",
     "chai": "^4.2.0",
