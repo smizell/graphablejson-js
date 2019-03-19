@@ -116,6 +116,6 @@ function handleSelections(selections) {
   return result;
 }
 
-exports.gqlQuery = gqlQuery = function gqlQuery(document, query) {
+exports.gqlQueryDocument = gqlQueryDocument = function gqlQueryDocument(document, query) {
   return rawQuery(document, transformGql(query))
 }

@@ -51,8 +51,8 @@ describe('GraphQL Query', function () {
         ]
       };
 
-      const result = gqlQuery(document, query);
+      const result = gqlQueryDocument(document, query);
       expect(await utils.expandObject(result)).to.eql(expectedResult);
     });
-  })
+  });
 });

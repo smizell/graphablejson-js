@@ -2,7 +2,7 @@ const axios = require('axios');
 const util = require('util');
 const gql = require('graphql-tag');
 
-const { gqlQuery, utils } = require('..');
+const { gqlQueryDocument, utils } = require('..');
 const apiUrl = 'https://moveablejsonapi.glitch.me';
 
 // Allow for changing examples through command line
@@ -18,7 +18,7 @@ async function main() {
       total
     }
   }`;
-  const value = gqlQuery(example, query);
+  const value = gqlQueryDocument(example, query);
   const expanded = await utils.expandObject(value);
   console.log(util.inspect(expanded, false, null, true));
 }
