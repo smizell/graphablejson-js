@@ -28,13 +28,17 @@ Lastly, Graphable JSON allows for thinking about relationships rather than JSON 
 
 This works because of the use of generators. When it's undefined or `null`, the library will never yield a value for `email`. When there is one, it will yield one `email`. And when there is an array, it will yield each one individually.
 
-## Usage
+The relationship of the data is defined by links instead of nested URLs. The Graphable JSON library does not care how links are constructed. Rather it will follow RESTful JSON links to find related data. Though a link may result in additional HTTP requests, it can allow clients to cache parts of the API depending on caching policies. Since it does not care about the links, it means that data can be moved around the API without breaking clients. APIs can be evolved over time.
+
+## Install
 
 Run the following to install the library:
 
 ```sh
 npm install graphablejson
 ```
+
+## Usage
 
 ### `gqlQuery`
 
