@@ -119,3 +119,8 @@ function handleSelections(selections) {
 exports.gqlQueryDocument = gqlQueryDocument = function gqlQueryDocument(document, query) {
   return rawQuery(document, transformGql(query))
 }
+
+exports.gqlQuery = gqlQuery = async function gqlQuery(apiUrl, query) {
+  let resp = await axios.get(apiUrl);
+  return rawQuery(resp.data, transformGql(query));
+}
