@@ -67,9 +67,11 @@ It requires you to have `graphql-js` and something like `graphql-tag` to be able
 const gql = require('graphql-tag');
 const { gqlQuery, utils } = require('graphablejson');
 
-const result = await gqlQuery('https://graphablejsonapi.glitch.me/orders/1000', gql`{
-  order_number
-  total
+const result = await gqlQuery('https://graphablejsonapi.glitch.me/examples/example2', gql`{
+  order {
+    order_number
+    total
+  }
 }`);
 
 // expandObject will follow links until the object is full expanded
