@@ -18,6 +18,7 @@ async function main() {
   }`;
   const value = await gqlQuery(url, query);
   // This resolves all of the links in the response (if there are any)
+  console.log(value);
   const expanded = await utils.expandObject(value);
   console.log(util.inspect(expanded, false, null, true));
 }
