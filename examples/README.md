@@ -6,6 +6,7 @@ It will also handle collections, which means if the property and link are not fo
 
 This example shows all of these scenarios through a [sample API](https://graphablejsonapi.glitch.me/). You can navigate there and see what the API looks like. The examples included in the API are:
 
+* `example0` shows an empty object
 * `example1` shows a single embedded order object
 * `example2` shows all of the order objects embedded
 * `example3` shows `order_url` with links to each order

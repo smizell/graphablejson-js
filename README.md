@@ -80,8 +80,6 @@ console.log(await utils.expandObject(await result));
 
 This makes use of all the functionality listed below. It will follow links and paginated collections.
 
-### `getProperty`
-
 ## Technical Details
 
 This section gives a look into how the library handles responses.
