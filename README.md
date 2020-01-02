@@ -1,8 +1,6 @@
 # Graphable JSON
 
-Graphable JSON is an idea for using GraphQL with a REST API. GraphQL allows client developers to define only what they need and the API responds with the requested data. Graphable JSON is similar in that it allows client developers to specify the shape of data. It differs in that it will provide the requested data by following links and paginated collections to get the data.
-
-Though this does not solve the problem of overfetching, it does let client developers forget about resources, URLs, and HTTP requests—they ask for what they need and that's all. For API developers, it lets them evolve their API without fear of breaking the client.
+Graphable JSON is a standard for reducing or completely removing many of the breaking changes that people encounter with APIs. It allows the server to evolve the API and not break clients.
 
 ## How it works
 
@@ -29,6 +27,12 @@ Lastly, Graphable JSON allows for thinking about relationships rather than JSON 
 This works because of the use of generators. When it's undefined or `null`, the library will never yield a value for `email`. When there is one, it will yield one `email`. And when there is an array, it will yield each one individually.
 
 The relationship of the data is defined by links instead of nested URLs. The Graphable JSON library does not care how links are constructed. Rather it will follow RESTful JSON links to find related data. Though a link may result in additional HTTP requests, it can allow clients to cache parts of the API depending on caching policies. Since it does not care about the links, it means that data can be moved around the API without breaking clients. APIs can be evolved over time.
+
+### GraphQL
+
+Graphable JSON works as a way to use GraphQL with a REST API. GraphQL allows client developers to define only what they need and the API responds with the requested data. Graphable JSON is similar in that it allows client developers to specify the shape of data. It differs in that it will provide the requested data by following links and paginated collections to get the data.
+
+Though this does not solve the problem of overfetching that GraphQL seeks to solve, it does let client developers forget about resources, URLs, and HTTP requests—they ask for what they need and that's all. For API developers, it lets them evolve their API without fear of breaking the client.
 
 ## Install
 
