@@ -1,6 +1,8 @@
-# Graphable JSON
+# Graphable JSON JS
 
 Graphable JSON is a standard for reducing or completely removing many of the breaking changes that people encounter with APIs. It allows the server to evolve the API and not break clients.
+
+This is an implementation of Graphable JSON.
 
 ## How it works
 
