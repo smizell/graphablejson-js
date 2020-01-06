@@ -2,7 +2,7 @@
 const axios = require('axios');
 const _ = require('lodash');
 
-exports.utils = require('./utils');
+exports.utils = utils = require('./utils');
 
 exports.rawQuery = rawQuery = function rawQuery(document, query) {
   const result = {};
@@ -33,8 +33,8 @@ exports.getProperty = getProperty = async function* getProperty(document, proper
 
 async function* handleProperty(value) {
   if (_.isPlainObject(value)) {
-    if (isIncludedCollection(value)) {
-      for (let item of value.$item) {
+    if (await isIncludedCollection(value)) {
+      for (let item of value.item) {
         yield item;
       }
       if (hasLink(value, 'next')) {
@@ -42,7 +42,7 @@ async function* handleProperty(value) {
       }
     }
     else if (isLinkedCollection(value)) {
-      for await (let item of followDocumentLinks(value, '$item')) {
+      for await (let item of followDocumentLinks(value, 'item')) {
         yield item;
       }
       if (hasLink(value, 'next')) {
@@ -86,12 +86,18 @@ function getLinkName(document, key) {
   return `${key}_url` in document ? `${key}_url` : `${key}Url`;
 }
 
-function isIncludedCollection(document) {
-  return '$item' in document;
+async function isIncludedCollection(document) {
+  if (hasLink(document, 'profile')) {
+    let profileUrls = await utils.expandValues(getDocumentUrls(document, 'profile'));
+    if (profileUrls.includes("https://github.com/smizell/graphablejson/wiki/Collection") && _.has(document, "item")) {
+      return true;
+    }
+  }
+  return false;
 }
 
 function isLinkedCollection(document) {
-  return hasLink(document, '$item');
+  return hasLink(document, 'item');
 }
 
 exports.transformGql = transformGql = function (query) {

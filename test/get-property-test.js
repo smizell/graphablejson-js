@@ -54,8 +54,9 @@ describe('Get Property', function () {
     context('collection resources', function () {
       it('handles included items', async function () {
         mock.onGet('/customers?page=1').reply(200, {
+          profile_url: "https://github.com/smizell/graphablejson/wiki/Collection",
           next_url: '/customers?page=2',
-          $item: [
+          item: [
             {
               email: 'jdoe@example.com'
             },
@@ -66,7 +67,8 @@ describe('Get Property', function () {
         });
 
         mock.onGet('/customers?page=2').reply(200, {
-          $item: [
+          profile_url: "https://github.com/smizell/graphablejson/wiki/Collection",
+          item: [
             {
               email: 'fsmith@example.com'
             },
@@ -89,15 +91,17 @@ describe('Get Property', function () {
 
       it('handles linked items', async function () {
         mock.onGet('/customers?page=1').reply(200, {
+          profile_url: "https://github.com/smizell/graphablejson/wiki/Collection",
           next_url: '/customers?page=2',
-          $item_url: [
+          item_url: [
             '/customers/1',
             '/customers/2'
           ]
         });
 
         mock.onGet('/customers?page=2').reply(200, {
-          $item_url: [
+          profile_url: "https://github.com/smizell/graphablejson/wiki/Collection",
+          item_url: [
             '/customers/3',
             '/customers/4'
           ]
