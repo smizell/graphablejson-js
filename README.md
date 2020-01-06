@@ -1,40 +1,6 @@
 # Graphable JSON JS
 
-Graphable JSON is a standard for reducing or completely removing many of the breaking changes that people encounter with APIs. It allows the server to evolve the API and not break clients.
-
-This is an implementation of Graphable JSON.
-
-## How it works
-
-When a URL and query are given to the Graphable JSON client, the library will request the URL and look for the properties and related objects directly included that response. If they are there, it returns the values it found. If the properties are links instead of values by way [RESTful JSON][RESTfulJSON], it will follow those links and provide the response values. If the links are for [collections](#Collections), it will follow `next` links and return all of the items from the collections.
-
-This library makes use of asynchronous generators. This means the library will not follow all of the links it finds but rather follow them only when the client asks for the next item. The data will be lazily resolved so only the used data will be requested. This allows API developers to convert values into links to help clients make use of caching and reduce response sizes. The smaller the responses, the better.
-
-Lastly, Graphable JSON allows for thinking about relationships rather than JSON structures. For example, a customer may have an `email` relationship, and this could mean there are no emails, one email, or many emails. The Graphable JSON library will treat the following examples of a customer the same.
-
-```js
-// No email
-{}
-
-// Email is null
-{ "email": null }
-
-// One email
-{ "email": "jdoe@example.com" }
-
-// Multiple emails
-{ "email": [ "jdoe@example.com", "jdoe2@example.com" ] }
-```
-
-This works because of the use of generators. When it's undefined or `null`, the library will never yield a value for `email`. When there is one, it will yield one `email`. And when there is an array, it will yield each one individually.
-
-The relationship of the data is defined by links instead of nested URLs. The Graphable JSON library does not care how links are constructed. Rather it will follow RESTful JSON links to find related data. Though a link may result in additional HTTP requests, it can allow clients to cache parts of the API depending on caching policies. Since it does not care about the links, it means that data can be moved around the API without breaking clients. APIs can be evolved over time.
-
-### GraphQL
-
-Graphable JSON works as a way to use GraphQL with a REST API. GraphQL allows client developers to define only what they need and the API responds with the requested data. Graphable JSON is similar in that it allows client developers to specify the shape of data. It differs in that it will provide the requested data by following links and paginated collections to get the data.
-
-Though this does not solve the problem of overfetching that GraphQL seeks to solve, it does let client developers forget about resources, URLs, and HTTP requests—they ask for what they need and that's all. For API developers, it lets them evolve their API without fear of breaking the client.
+This is a JavaScript implementation of [Graphable JSON](https://github.com/smizell/graphablejson).
 
 ## Install
 
