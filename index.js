@@ -22,8 +22,12 @@ exports.getRelated = getRelated = async function* getRelated(items, query) {
   }
 }
 
-exports.getProperty = getProperty = async function* getProperty(document, property) {
-  if (property in document) {
+exports.getProperty = getProperty = async function* getProperty(document, property, version) {
+  if (version && hasVersion(document, property, version)) {
+    const newProperty = getVersionProperty(document, property, version);
+    yield* handleProperty(document[newProperty]);
+  }
+  else if (property in document) {
     yield* handleProperty(document[property]);
   }
   else if (hasLink(document, property)) {
@@ -65,6 +69,19 @@ async function* handleProperty(value) {
 
 function hasLink(document, key) {
   return `${key}_url` in document || `${key}Url` in document;
+}
+
+function hasVersion(document, property, version) {
+  return `${property}${version}` in document || `${property}_${version}` in document;
+}
+
+function getVersionProperty(document, property, version) {
+  if (`${property}${version}` in document) {
+    return `${property}${version}`;
+  }
+  else {
+    return `${property}_${version}`;
+  }
 }
 
 async function* followDocumentLinks(document, property) {

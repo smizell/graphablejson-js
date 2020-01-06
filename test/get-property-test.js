@@ -135,4 +135,20 @@ describe('Get Property', function () {
       });
     });
   });
+
+  context('versioned types', function () {
+    it('finds the right value', async function () {
+      // Example where old value used 1 and 0 for true/false and switched to
+      // using boolean in the future
+      const value = {
+        isCold: 1,
+        isCold_v2: true
+      }
+
+      const oldValue = await utils.expandValues(getProperty(value, 'isCold'));
+      const v2Value = await utils.expandValues(getProperty(value, 'isCold', 'v2'));
+      expect(oldValue).to.eql([1]);
+      expect(v2Value).to.eql([true]);
+    });
+  });
 });
